@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VirtualOffice — Spatial Audio Prototype</title>
+<style>
+  :root {
+    --bg: #1a1d23;
+    --surface: #22262d;
+    --border: #2e333b;
+    --text: #d4d6db;
+    --text-dim: #888c94;
+    --accent: #5b9bd5;
+    --green: #4caf50;
+    --red: #ef5350;
+    --amber: #ffa726;
+    --room-bg: rgba(30,35,44,0.6);
+    --room-meeting: rgba(91,155,213,0.08);
+    --room-focus: rgba(239,83,80,0.08);
+    --room-social: rgba(76,175,80,0.08);
+    --zone-warm: rgba(255,167,38,0.04);
+    --zone-cool: rgba(91,155,213,0.04);
+    --zone-sage: rgba(76,175,80,0.04);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+  }
+  #root {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* Top bar */
+  #topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    z-index: 10;
+    flex-shrink: 0;
+  }
+  #topbar h1 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+  #topbar .controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  #topbar .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  #topbar .status-dot.online { background: var(--green); }
+  #topbar .status-dot.offline { background: var(--red); }
+  #topbar .status-dot.connecting { background: var(--amber); }
+  #topbar input, #topbar button, #topbar select {
+    font-family: inherit;
+    font-size: 13px;
+  }
+  #topbar input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 6px;
+    width: 200px;
+  }
+  #topbar button {
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  #topbar button:hover { opacity: 0.85; }
+  #topbar button:disabled { opacity: 0.4; cursor: default; }
+  #topbar select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 8px;
+    border-radius: 6px;
+  }
+  #connection-status {
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 120px;
+  }
+
+  /* Canvas area */
+  #canvas-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+  }
+  #canvas-container:active { cursor: grabbing; }
+  canvas {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  /* Debug panel */
+  #debug-panel {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(0,0,0,0.8);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 11px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    max-width: 400px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 5;
+  }
+  #debug-panel .entry { margin-bottom: 2px; }
+  #debug-panel .entry .peer { color: var(--accent); }
+  #debug-panel .entry .gain { color: var(--green); }
+  #debug-panel .entry .pan { color: var(--amber); }
+  #debug-panel .entry .muted { color: var(--red); }
+
+  /* Mic toggle */
+  .mic-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+  }
+  .mic-indicator.muted { color: var(--red); }
+  .mic-indicator.live { color: var(--green); }
+
+  /* Help */
+  #help-bar {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    font-size: 11px;
+    color: var(--text-dim);
+    z-index: 5;
+  }
+</style>
+</head>
+<body>
+<div id="root">
+  <div id="topbar">
+    <h1>🎤 VirtualOffice Spatial Audio</h1>
+    <div class="controls">
+      <input id="server-url" type="text" value="" placeholder="wss://your-livekit-server.com" />
+      <input id="token-input" type="text" value="" placeholder="LiveKit token (or get from ?token=)" style="width:280px;" />
+      <input id="player-name" type="text" value="Du" placeholder="Name" style="width:120px;" />
+      <button id="btn-connect" onclick="toggleConnection()">Connect</button>
+      <button id="btn-toggle-mic" onclick="toggleMic()" disabled>🎙️ Mic</button>
+      <span id="connection-status">
+        <span class="status-dot offline"></span>
+        <span>Disconnected</span>
+      </span>
+    </div>
+  </div>
+  <div id="canvas-container">
+    <canvas id="canvas"></canvas>
+    <div id="debug-panel" style="display:none;">
+      <div style="margin-bottom:4px;font-weight:600;">🎧 Active Audio Sources</div>
+      <div id="debug-entries"></div>
+    </div>
+    <div id="help-bar">
+      Click to move · WASD 200px/s · Scroll to zoom · Drag to pan
+    </div>
+  </div>
+</div>
+
+<script type="module">
+// ============================================================================
+// Spatial Audio Prototype — integrates LiveKit + Web Audio API PannerNode
+// with inverse-square falloff, zone-gating, and 20Hz data channel sync
+// ============================================================================
+
+// --- Constants (from design doc t_62301704) ---
+const NEAR_FIELD = 40;         // px — full volume within this radius
+const MAX_DISTANCE = 400;      // px — silence beyond this
+const CONVERSATION_RADIUS = 60;
+const CONVERSATION_BONUS = 1.4; // +dB bonus within conversation radius
+const MOVE_SPEED = 200;        // px/s
+const POSITION_SYNC_HZ = 20;   // server push rate
+const INTERP_RATE = 0.15;      // lerp smoothing
+const MAX_SIMULTANEOUS = 20;   // cull below 0.005 gain, cap at 20 voices
+const GAIN_CUTOFF = 0.005;
+
+// --- Office Layout (simplified from prototype layouts.js) ---
+const FLOOR_W = 2400;
+const FLOOR_H = 1350;
+const SPAWN = { x: 380, y: 700 };
+
+const ROOMS = [
+  { id:'meeting-a', name:'Mødelokale A', type:'meeting', x:60, y:70, w:240, h:200 },
+  { id:'meeting-b', name:'Mødelokale B', type:'meeting', x:320, y:70, w:180, h:160 },
+  { id:'focus-1', name:'Fokus 1', type:'focus', x:520, y:70, w:120, h:130 },
+  { id:'focus-2', name:'Fokus 2', type:'focus', x:660, y:70, w:120, h:130 },
+  { id:'boardroom', name:'Bestyrelseslokale', type:'meeting', x:800, y:70, w:320, h:200 },
+  { id:'office-dir', name:'Direktør', type:'focus', x:1140, y:70, w:140, h:130 },
+  { id:'office-hr', name:'HR', type:'focus', x:1300, y:70, w:140, h:130 },
+  { id:'training', name:'Træning', type:'meeting', x:1460, y:70, w:240, h:200 },
+  { id:'brainstorm', name:'Brainstorm', type:'meeting', x:1720, y:70, w:200, h:200 },
+  { id:'auditorium', name:'Auditorium', type:'meeting', x:1940, y:70, w:420, h:230 },
+  { id:'kitchen', name:'Køkken', type:'social', x:1000, y:880, w:420, h:240 },
+  { id:'cafeteria', name:'Kantine', type:'social', x:1500, y:880, w:800, h:380 },
+  { id:'lounge', name:'Lounge', type:'social', x:1000, y:500, w:420, h:200 },
+  { id:'eng-pod', name:'Engineering', type:'open', x:40, y:460, w:580, h:350 },
+  { id:'sales-pod', name:'Salg', type:'open', x:1440, y:460, w:460, h:350 },
+];
+
+// Sample remote participants (will be replaced by LiveKit peers)
+const SAMPLE_PEERS = [
+  { id:'AB', name:'Anna Bjerre', x:110, y:585, color:'#7bc67e' },
+  { id:'DK', name:'Daniel K.', x:220, y:585, color:'#5b8cb8' },
+  { id:'CH', name:'Christine H.', x:1080, y:550, color:'#7bc67e' },
+  { id:'BR', name:'Bjørn R.', x:1110, y:630, color:'#5b8cb8' },
+  { id:'MN', name:'Mette Nielsen', x:110, y:140, color:'#7bc67e' },
+];
+
+// --- State ---
+let player = {
+  id: 'YOU', name: 'Du', x: SPAWN.x, y: SPAWN.y,
+  targetX: SPAWN.x, targetY: SPAWN.y,
+};
+let peers = new Map();         // id -> { name, x, y, targetX, targetY, color }
+let audioContext = null;
+let livekitRoom = null;
+let localTrack = null;
+let micEnabled = false;
+
+// Per-peer audio state
+let peerAudioNodes = new Map();  // peerId -> { panner, gain, analyser?, track, source }
+
+// Canvas state
+let canvas, ctx;
+let view = { x: 0, y: 0, zoom: 0.6 };
+let dragState = null;
+let keys = {};
+let rafId = null;
+let lastTick = performance.now();
+
+// --- Layout helpers ---
+function pointInRoom(px, py, room) {
+  return px >= room.x && px <= room.x + room.w && py >= room.y && py <= room.y + room.h;
+}
+
+function roomForPoint(x, y) {
+  for (const r of ROOMS) {
+    if (pointInRoom(x, y, r)) return r;
+  }
+  return null;
+}
+
+function roomCenter(room) {
+  return { x: room.x + room.w / 2, y: room.y + room.h / 2 };
+}
+
+// --- Spatial audio math ---
+function distance(a, b) {
+  return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+}
+
+// Inverse-square falloff with near-field plateau and distance cutoff
+function attenuationGain(dist) {
+  if (dist <= NEAR_FIELD) return 1.0;
+  if (dist >= MAX_DISTANCE) return 0.0;
+  // Inverse-square scaled: gain = (NEAR_FIELD / dist)^2
+  return (NEAR_FIELD / dist) ** 2;
+}
+
+// Conversation bonus: +1.4 dB = multiply by ~1.17
+function conversationMultiplier(dist) {
+  return dist <= CONVERSATION_RADIUS ? CONVERSATION_BONUS : 1.0;
+}
+
+// Zone audio mixing strategy
+function zoneMixFor(sourceRoom, listenerRoom) {
+  if (!sourceRoom || !listenerRoom) return 'open';
+  // Same room
+  if (sourceRoom.id === listenerRoom.id) return 'same-room';
+  // Meeting room: conference mix — hear everyone inside
+  if (sourceRoom.type === 'meeting' && listenerRoom.type === 'meeting' &&
+      sourceRoom.id === listenerRoom.id) return 'conference';
+  // Focus room: silence (don't hear outside, outside doesn't hear inside)
+  if (sourceRoom.type === 'focus' || listenerRoom.type === 'focus') return 'silence';
+  // Social: boosted — reduced falloff
+  if (sourceRoom.type === 'social' || listenerRoom.type === 'social') return 'boosted';
+  return 'open';
+}
+
+// Equal-power stereo panning based on horizontal offset
+function computePan(dx) {
+  // dx clamped to [-MAX_DISTANCE, MAX_DISTANCE]
+  const norm = Math.max(-1, Math.min(1, dx / MAX_DISTANCE));
+  // Equal-power: pan = sin(norm * pi/2)
+  return Math.sin(norm * Math.PI / 2);
+}
+
+// --- Audio pipeline ---
+function ensureAudioContext() {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
+  return audioContext;
+}
+
+function createSpatialNode(track) {
+  const ctx = ensureAudioContext();
+  // Attach track to AudioContext
+  const stream = new MediaStream([track.mediaStreamTrack]);
+  const source = ctx.createMediaStreamSource(stream);
+
+  // PannerNode for spatialization
+  const panner = ctx.createStereoPanner();
+  panner.pan.value = 0;
+
+  // GainNode for distance attenuation + zone-gating
+  const gain = ctx.createGain();
+  gain.gain.value = 0;
+
+  // Chain: source -> gain -> panner -> destination
+  source.connect(gain);
+  gain.connect(panner);
+  panner.connect(ctx.destination);
+
+  // Optional: analyser for debugging
+  const analyser = ctx.createAnalyser();
+  analyser.fftSize = 256;
+  gain.connect(analyser);
+
+  return { panner, gain, source, analyser, stream };
+}
+
+function disposeSpatialNode(nodes) {
+  if (!nodes) return;
+  try {
+    nodes.source.disconnect();
+    nodes.gain.disconnect();
+    nodes.panner.disconnect();
+    if (nodes.analyser) nodes.analyser.disconnect();
+    if (nodes.stream) nodes.stream.getTracks().forEach(t => t.stop());
+  } catch (e) {
+    console.warn('Error disposing spatial node:', e);
+  }
+}
+
+function updateSpatialAudio() {
+  if (!audioContext) return;
+
+  const playerRoom = roomForPoint(player.x, player.y);
+
+  // Collect all peer distances, sort closest first
+  let scored = [];
+  for (const [peerId, peer] of peers) {
+    const dist = distance(player, peer);
+    scored.push({ peerId, dist });
+  }
+
+  // Sort by distance ascending
+  scored.sort((a, b) => a.dist - b.dist);
+
+  // Cap at MAX_SIMULTANEOUS, cull below GAIN_CUTOFF
+  let activeCount = 0;
+  const debugLines = [];
+
+  for (const { peerId, dist } of scored) {
+    const peer = peers.get(peerId);
+    const nodes = peerAudioNodes.get(peerId);
+    if (!nodes) continue;
+
+    const dx = peer.x - player.x;
+    const sourceRoom = roomForPoint(peer.x, peer.y);
+    const mix = zoneMixFor(sourceRoom, playerRoom);
+
+    // Compute gain
+    let gain = 0;
+    if (mix === 'silence') {
+      gain = 0;
+    } else if (mix === 'same-room' || mix === 'conference') {
+      // Inside same room — full volume (conference mix)
+      gain = 1.0;
+    } else {
+      // Apply distance attenuation
+      gain = attenuationGain(dist);
+      // Conversation bonus
+      gain *= conversationMultiplier(dist);
+      // Social zone boost: reduce falloff (multiply gain by 2 for social)
+      if (mix === 'boosted') gain = Math.min(1.0, gain * 2.0);
+    }
+
+    // Cull below cutoff or if over cap
+    if (gain < GAIN_CUTOFF || activeCount >= MAX_SIMULTANEOUS) {
+      gain = 0;
+    }
+
+    if (gain > 0) activeCount++;
+
+    // Smooth gain transition
+    const currentGain = nodes.gain.gain.value;
+    const targetGain = gain;
+    nodes.gain.gain.value = currentGain + (targetGain - currentGain) * 0.1;
+
+    // Equal-power panning based on horizontal offset
+    const pan = computePan(dx);
+    nodes.panner.pan.value = pan;
+
+    // Debug
+    if (gain > 0.001) {
+      debugLines.push({
+        name: peer.name,
+        dist: dist.toFixed(0),
+        gain: gain.toFixed(3),
+        pan: pan.toFixed(2),
+        zone: mix,
+      });
+    }
+  }
+
+  // Mute all peers not in the active set
+  for (const [peerId] of peerAudioNodes) {
+    if (!scored.some(s => s.peerId === peerId && s.dist <= MAX_DISTANCE)) {
+      const nodes = peerAudioNodes.get(peerId);
+      if (nodes && nodes.gain.gain.value > 0.001) {
+        nodes.gain.gain.value = 0;
+      }
+    }
+  }
+
+  // Update debug panel
+  updateDebugPanel(debugLines);
+}
+
+// --- Debug panel ---
+function updateDebugPanel(lines) {
+  const panel = document.getElementById('debug-panel');
+  const entries = document.getElementById('debug-entries');
+  if (lines.length === 0) {
+    panel.style.display = 'none';
+    return;
+  }
+  panel.style.display = 'block';
+  entries.innerHTML = lines.map(l =>
+    `<div class="entry">
+      <span class="peer">${l.name}</span>
+      d=${l.dist}px
+      <span class="gain">+${(20 * Math.log10(l.gain)).toFixed(1)}dB</span>
+      <span class="pan">pan=${l.pan}</span>
+      <span>${l.zone}</span>
+    </div>`
+  ).join('');
+}
+
+// --- LiveKit integration ---
+async function connectLiveKit(serverUrl, token) {
+  if (!window.LiveKitClient) {
+    throw new Error('LiveKit SDK not loaded');
+  }
+
+  const room = new LiveKitClient.Room({
+    adaptiveStream: true,
+    dynacast: true,
+  });
+
+  room.on(LiveKitClient.RoomEvent.TrackSubscribed, (track, publication, participant) => {
+    if (track.kind === 'audio') {
+      handleRemoteAudioTrack(track, participant);
+    }
+  });
+
+  room.on(LiveKitClient.RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
+    if (track.kind === 'audio') {
+      handleRemoteAudioTrackRemoved(participant);
+    }
+  });
+
+  room.on(LiveKitClient.RoomEvent.ParticipantConnected, (participant) => {
+    console.log('Participant connected:', participant.identity, participant.name);
+    addPeer(participant.identity, participant.name || participant.identity);
+  });
+
+  room.on(LiveKitClient.RoomEvent.ParticipantDisconnected, (participant) => {
+    console.log('Participant disconnected:', participant.identity);
+    removePeer(participant.identity);
+  });
+
+  // Data channel for position sync
+  room.on(LiveKitClient.RoomEvent.DataReceived, (payload, participant) => {
+    try {
+      const data = JSON.parse(new TextDecoder().decode(payload));
+      if (data.type === 'position') {
+        handlePositionUpdate(participant.identity, data);
+      }
+    } catch (e) {
+      // ignore non-JSON / non-position messages
+    }
+  });
+
+  await room.connect(serverUrl, token);
+  console.log('Connected to LiveKit room:', room.name);
+
+  // Enable local mic
+  await enableLocalMic(room);
+
+  // Start position broadcast loop
+  startPositionBroadcast(room);
+
+  livekitRoom = room;
+  return room;
+}
+
+async function enableLocalMic(room) {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+    });
+    const track = await LiveKitClient.LocalAudioTrack.createAudioTrack('mic', stream.getAudioTracks()[0]);
+    await room.localParticipant.publishTrack(track);
+    localTrack = track;
+    micEnabled = true;
+    updateMicButton();
+    console.log('Microphone enabled');
+  } catch (e) {
+    console.error('Microphone access denied or error:', e);
+    micEnabled = false;
+    updateMicButton();
+  }
+}
+
+function startPositionBroadcast(room) {
+  const intervalMs = 1000 / POSITION_SYNC_HZ; // 50ms = 20Hz
+  setInterval(() => {
+    if (!room || room.state !== 'connected') return;
+    const payload = new TextEncoder().encode(JSON.stringify({
+      type: 'position',
+      x: player.x,
+      y: player.y,
+      timestamp: Date.now(),
+    }));
+    room.localParticipant.publishData(payload, { reliable: false });
+  }, intervalMs);
+}
+
+function handleRemoteAudioTrack(track, participant) {
+  ensureAudioContext();
+  const nodes = createSpatialNode(track);
+  peerAudioNodes.set(participant.identity, nodes);
+  console.log('Audio track added for', participant.identity);
+}
+
+function handleRemoteAudioTrackRemoved(participant) {
+  const nodes = peerAudioNodes.get(participant.identity);
+  if (nodes) {
+    disposeSpatialNode(nodes);
+    peerAudioNodes.delete(participant.identity);
+  }
+}
+
+function handlePositionUpdate(participantId, data) {
+  if (participantId === player.id) return;
+  let peer = peers.get(participantId);
+  if (!peer) {
+    addPeer(participantId, participantId, data.color);
+    peer = peers.get(participantId);
+  }
+  if (peer) {
+    peer.targetX = data.x;
+    peer.targetY = data.y;
+  }
+}
+
+async function toggleConnection() {
+  const btn = document.getElementById('btn-connect');
+  const status = document.getElementById('connection-status');
+
+  if (livekitRoom && livekitRoom.state === 'connected') {
+    await disconnect();
+    return;
+  }
+
+  const serverUrl = document.getElementById('server-url').value.trim();
+  let token = document.getElementById('token-input').value.trim();
+  player.name = document.getElementById('player-name').value.trim() || 'Du';
+
+  // Allow token from URL query parameter
+  if (!token) {
+    const params = new URLSearchParams(window.location.search);
+    token = params.get('token') || '';
+  }
+
+  if (!serverUrl || !token) {
+    alert('Enter LiveKit server URL and token');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Connecting...';
+  status.innerHTML = '<span class="status-dot connecting"></span> Connecting...';
+
+  try {
+    await connectLiveKit(serverUrl, token);
+    btn.textContent = 'Disconnect';
+    btn.disabled = false;
+    status.innerHTML = '<span class="status-dot online"></span> Connected';
+    document.getElementById('btn-toggle-mic').disabled = false;
+  } catch (e) {
+    console.error('Connection failed:', e);
+    btn.textContent = 'Connect';
+    btn.disabled = false;
+    status.innerHTML = '<span class="status-dot offline"></span> Error: ' + e.message;
+    alert('Connection failed: ' + e.message);
+  }
+}
+
+async function disconnect() {
+  if (localTrack) {
+    localTrack.stop();
+    localTrack = null;
+  }
+  if (livekitRoom) {
+    livekitRoom.disconnect();
+    livekitRoom = null;
+  }
+  // Clean up all peer audio nodes
+  for (const [, nodes] of peerAudioNodes) {
+    disposeSpatialNode(nodes);
+  }
+  peerAudioNodes.clear();
+  peers.clear();
+
+  micEnabled = false;
+  document.getElementById('btn-connect').textContent = 'Connect';
+  document.getElementById('btn-toggle-mic').disabled = true;
+  document.getElementById('connection-status').innerHTML =
+    '<span class="status-dot offline"></span> Disconnected';
+  updateMicButton();
+}
+
+async function toggleMic() {
+  if (!livekitRoom || livekitRoom.state !== 'connected') return;
+  if (micEnabled) {
+    if (localTrack) {
+      livekitRoom.localParticipant.unpublishTrack(localTrack);
+      localTrack.stop();
+      localTrack = null;
+    }
+    micEnabled = false;
+  } else {
+    await enableLocalMic(livekitRoom);
+  }
+  updateMicButton();
+}
+
+function updateMicButton() {
+  const btn = document.getElementById('btn-toggle-mic');
+  btn.textContent = micEnabled ? '🎙️ Mute' : '🔇 Unmute';
+  btn.style.background = micEnabled ? 'var(--green)' : 'var(--red)';
+}
+
+// --- Peer management (for both LiveKit and samples) ---
+function addPeer(id, name, color) {
+  if (peers.has(id)) return;
+  const spawnRoom = ROOMS.find(r => r.type === 'social') || ROOMS[0];
+  const center = roomCenter(ROOMS[Math.floor(Math.random() * ROOMS.length)]);
+  peers.set(id, {
+    id, name, color: color || randomColor(),
+    x: center.x + (Math.random() - 0.5) * 100,
+    y: center.y + (Math.random() - 0.5) * 100,
+    targetX: center.x,
+    targetY: center.y,
+  });
+}
+
+function removePeer(id) {
+  peers.delete(id);
+  const nodes = peerAudioNodes.get(id);
+  if (nodes) {
+    disposeSpatialNode(nodes);
+    peerAudioNodes.delete(id);
+  }
+}
+
+function randomColor() {
+  const colors = ['#7bc67e', '#5b8cb8', '#d4a857', '#b87bc6', '#c67b7b'];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+// --- Initialize sample peers (for demo without LiveKit server) ---
+function initSamplePeers() {
+  SAMPLE_PEERS.forEach(p => addPeer(p.id, p.name, p.color));
+}
+
+// --- Canvas rendering ---
+function initCanvas() {
+  canvas = document.getElementById('canvas');
+  ctx = canvas.getContext('2d');
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  setupInput();
+}
+
+function resizeCanvas() {
+  const container = document.getElementById('canvas-container');
+  canvas.width = container.clientWidth;
+  canvas.height = container.clientHeight;
+}
+
+function worldToScreen(wx, wy) {
+  return {
+    x: (wx - view.x) * view.zoom + canvas.width / 2,
+    y: (wy - view.y) * view.zoom + canvas.height / 2,
+  };
+}
+
+function screenToWorld(sx, sy) {
+  return {
+    x: view.x + (sx - canvas.width / 2) / view.zoom,
+    y: view.y + (sy - canvas.height / 2) / view.zoom,
+  };
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Floor background
+  const floorTL = worldToScreen(0, 0);
+  const floorBR = worldToScreen(FLOOR_W, FLOOR_H);
+  ctx.fillStyle = '#1c1f26';
+  ctx.fillRect(floorTL.x, floorTL.y, floorBR.x - floorTL.x, floorBR.y - floorTL.y);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1 / view.zoom;
+  const gridSize = 50;
+  const startX = Math.floor(view.x / gridSize) * gridSize;
+  const startY = Math.floor(view.y / gridSize) * gridSize;
+  for (let x = startX; x < view.x + canvas.width / view.zoom; x += gridSize) {
+    const p1 = worldToScreen(x, 0);
+    const p2 = worldToScreen(x, FLOOR_H);
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+  }
+  for (let y = startY; y < view.y + canvas.height / view.zoom; y += gridSize) {
+    const p1 = worldToScreen(0, y);
+    const p2 = worldToScreen(FLOOR_W, y);
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+  }
+
+  // Rooms
+  for (const room of ROOMS) {
+    const tl = worldToScreen(room.x, room.y);
+    const br = worldToScreen(room.x + room.w, room.y + room.h);
+    const w = br.x - tl.x;
+    const h = br.y - tl.y;
+
+    let fill;
+    switch (room.type) {
+      case 'meeting': fill = 'rgba(91,155,213,0.12)'; break;
+      case 'focus':   fill = 'rgba(239,83,80,0.10)'; break;
+      case 'social':  fill = 'rgba(76,175,80,0.12)'; break;
+      default:        fill = 'rgba(255,255,255,0.04)'; break;
+    }
+
+    ctx.fillStyle = fill;
+    ctx.fillRect(tl.x, tl.y, w, h);
+
+    ctx.strokeStyle = room.type === 'focus'
+      ? 'rgba(239,83,80,0.3)'
+      : room.type === 'meeting'
+        ? 'rgba(91,155,213,0.3)'
+        : 'rgba(76,175,80,0.3)';
+    ctx.lineWidth = 2 / view.zoom;
+    ctx.strokeRect(tl.x, tl.y, w, h);
+
+    // Room label
+    if (view.zoom > 0.3) {
+      const fontSize = Math.max(9, Math.min(14, 12 * view.zoom));
+      ctx.font = `${fontSize}px -apple-system, sans-serif`;
+      ctx.fillStyle = room.type === 'focus'
+        ? 'rgba(239,83,80,0.7)'
+        : room.type === 'meeting'
+          ? 'rgba(91,155,213,0.7)'
+          : 'rgba(76,175,80,0.7)';
+      ctx.textAlign = 'center';
+      ctx.fillText(room.name, tl.x + w / 2, tl.y + h / 2 - 4);
+
+      // Type tag
+      if (view.zoom > 0.5) {
+        const tagFontSize = Math.max(8, 9 * view.zoom);
+        ctx.font = `${tagFontSize}px -apple-system, sans-serif`;
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.fillText(
+          room.type === 'meeting' ? 'møde' : room.type === 'focus' ? 'fokus' : 'social',
+          tl.x + w / 2, tl.y + h / 2 + fontSize
+        );
+      }
+    }
+  }
+
+  // Draw all peers
+  drawPeers();
+
+  // Draw player
+  drawAvatar(player.x, player.y, player.name, '#5b9bd5', true, true);
+
+  // Click target indicator
+  if (player.targetX !== player.x || player.targetY !== player.y) {
+    const tp = worldToScreen(player.targetX, player.targetY);
+    ctx.beginPath();
+    ctx.arc(tp.x, tp.y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(91,155,213,0.4)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(91,155,213,0.7)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+}
+
+function drawPeers() {
+  for (const [id, peer] of peers) {
+    drawAvatar(peer.x, peer.y, peer.name, peer.color, false, false);
+  }
+}
+
+function drawAvatar(wx, wy, name, colorHex, isPlayer, showStatus) {
+  const p = worldToScreen(wx, wy);
+  const r = Math.max(10, Math.min(22, 16 * view.zoom));
+
+  // Shadow
+  ctx.beginPath();
+  ctx.ellipse(p.x, p.y + r * 0.7 + 2, r * 0.8, r * 0.2, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.fill();
+
+  // Body circle
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+  ctx.fillStyle = colorHex;
+  ctx.fill();
+  if (isPlayer) {
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = Math.max(1.5, 2 * view.zoom);
+    ctx.stroke();
+  }
+
+  // Initials
+  const initials = name.split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase();
+  const fontSize = Math.max(8, r * 0.7);
+  ctx.font = `bold ${fontSize}px -apple-system, sans-serif`;
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(initials, p.x, p.y);
+
+  // Name label
+  if (view.zoom > 0.25) {
+    const labelFontSize = Math.max(7, 9 * view.zoom);
+    ctx.font = `${labelFontSize}px -apple-system, sans-serif`;
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.fillText(name, p.x, p.y - r - 12 * view.zoom);
+  }
+
+  // Hearing radius indicator for player
+  if (isPlayer) {
+    const hearingR = MAX_DISTANCE * view.zoom;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, hearingR, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([8, 12]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+// --- Input handling ---
+function setupInput() {
+  // Click to move
+  canvas.addEventListener('click', (e) => {
+    if (dragState) return; // Don't move after drag
+    const world = screenToWorld(e.clientX, e.clientY);
+    if (world.x >= 0 && world.x <= FLOOR_W && world.y >= 0 && world.y <= FLOOR_H) {
+      player.targetX = world.x;
+      player.targetY = world.y;
+    }
+  });
+
+  // Pan: middle mouse or space+left click
+  canvas.addEventListener('mousedown', (e) => {
+    if (e.button === 1 || (e.button === 0 && keys['Space'])) {
+      dragState = { x: e.clientX, y: e.clientY, startViewX: view.x, startViewY: view.y };
+      e.preventDefault();
+    }
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (dragState) {
+      const dx = (e.clientX - dragState.x) / view.zoom;
+      const dy = (e.clientY - dragState.y) / view.zoom;
+      view.x = dragState.startViewX - dx;
+      view.y = dragState.startViewY - dy;
+    }
+  });
+
+  window.addEventListener('mouseup', () => { dragState = null; });
+
+  // Zoom
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+    const newZoom = Math.max(0.2, Math.min(2.0, view.zoom * zoomFactor));
+    // Zoom toward cursor
+    const mouseWX = view.x + (e.clientX - canvas.width / 2) / view.zoom;
+    const mouseWY = view.y + (e.clientY - canvas.height / 2) / view.zoom;
+    view.x = mouseWX - (e.clientX - canvas.width / 2) / newZoom;
+    view.y = mouseWY - (e.clientY - canvas.height / 2) / newZoom;
+    view.zoom = newZoom;
+  });
+
+  // Keyboard
+  window.addEventListener('keydown', (e) => {
+    keys[e.code] = true;
+    if (e.code === 'KeyF') {
+      // Focus on player
+      view.x = player.x;
+      view.y = player.y;
+    }
+  });
+  window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+  // Touch support
+  canvas.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      const world = screenToWorld(e.touches[0].clientX, e.touches[0].clientY);
+      player.targetX = Math.max(0, Math.min(FLOOR_W, world.x));
+      player.targetY = Math.max(0, Math.min(FLOOR_H, world.y));
+    } else if (e.touches.length === 2) {
+      dragState = {
+        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+        y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+        startViewX: view.x,
+        startViewY: view.y,
+        startDist: Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        ),
+        startZoom: view.zoom,
+      };
+    }
+  });
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (dragState && e.touches.length === 2) {
+      const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      view.x = dragState.startViewX - (cx - dragState.x) / view.zoom;
+      view.y = dragState.startViewY - (cy - dragState.y) / view.zoom;
+      view.zoom = Math.max(0.2, Math.min(2.0, dragState.startZoom * (dist / dragState.startDist)));
+    }
+  });
+  canvas.addEventListener('touchend', () => { dragState = null; });
+}
+
+// --- Game loop ---
+function gameLoop(now) {
+  const dt = Math.min((now - lastTick) / 1000, 0.1); // cap delta to 0.1s
+  lastTick = now;
+
+  // Player movement — WASD
+  let dx = 0, dy = 0;
+  if (keys['KeyW'] || keys['ArrowUp'])    dy -= 1;
+  if (keys['KeyS'] || keys['ArrowDown'])  dy += 1;
+  if (keys['KeyA'] || keys['ArrowLeft'])  dx -= 1;
+  if (keys['KeyD'] || keys['ArrowRight']) dx += 1;
+
+  if (dx !== 0 || dy !== 0) {
+    const len = Math.sqrt(dx * dx + dy * dy);
+    dx = (dx / len) * MOVE_SPEED * dt;
+    dy = (dy / len) * MOVE_SPEED * dt;
+    player.x = Math.max(0, Math.min(FLOOR_W, player.x + dx));
+    player.y = Math.max(0, Math.min(FLOOR_H, player.y + dy));
+    player.targetX = player.x;
+    player.targetY = player.y;
+  } else if (player.targetX !== player.x || player.targetY !== player.y) {
+    // Click-to-move: lerp toward target
+    const tdx = player.targetX - player.x;
+    const tdy = player.targetY - player.y;
+    const td = Math.sqrt(tdx * tdx + tdy * tdy);
+    const speed = MOVE_SPEED * dt;
+
+    if (td <= speed) {
+      player.x = player.targetX;
+      player.y = player.targetY;
+    } else {
+      player.x += (tdx / td) * speed;
+      player.y += (tdy / td) * speed;
+    }
+  }
+
+  // Peer lerp interpolation
+  for (const [, peer] of peers) {
+    peer.x += (peer.targetX - peer.x) * INTERP_RATE;
+    peer.y += (peer.targetY - peer.y) * INTERP_RATE;
+  }
+
+  // Update spatial audio
+  updateSpatialAudio();
+
+  // Render
+  draw();
+
+  rafId = requestAnimationFrame(gameLoop);
+}
+
+// --- Initialization ---
+function init() {
+  initCanvas();
+
+  // Check for URL token
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const serverUrl = params.get('server');
+
+  if (serverUrl) document.getElementById('server-url').value = serverUrl;
+  if (token) document.getElementById('token-input').value = token;
+
+  // Add sample peers for demo without LiveKit
+  initSamplePeers();
+
+  // Start game loop
+  rafId = requestAnimationFrame(gameLoop);
+
+  // Auto-connect if URL has token and server
+  if (serverUrl && token) {
+    // Small delay to make sure everything is ready
+    setTimeout(() => toggleConnection(), 500);
+  }
+}
+
+// Global functions for HTML onclick
+window.toggleConnection = toggleConnection;
+window.toggleMic = toggleMic;
+
+// Load LiveKit SDK then init
+const script = document.createElement('script');
+script.src = 'https://cdn.jsdelivr.net/npm/livekit-client@latest/dist/livekit-client.umd.min.js';
+script.onload = () => {
+  console.log('LiveKit SDK loaded');
+  init();
+};
+script.onerror = () => {
+  console.error('Failed to load LiveKit SDK — running in visual-demo mode');
+  // Still init for visual layout / spatial audio demo (no LiveKit)
+  window.LiveKitClient = null;
+  init();
+};
+document.head.appendChild(script);
+</script>
+</body>
+</html>

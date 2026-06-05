@@ -1,0 +1,1575 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<title>VirtualOffice — Prototype</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<style>
+  :root{
+    --cream: #F1ECDF;
+    --cream-2: #E8E2D2;
+    --cream-3: #DDD4BC;
+    --paper: #FBF8F1;
+    --navy: #1A2738;
+    --navy-2: #243348;
+    --ink: #1B1D1F;
+    --ink-soft: #3D3F42;
+    --mute: #8B8578;
+    --rule: #CFC7B3;
+    --rule-soft: #E2DBC7;
+    --terra: #C25A3A;
+    --terra-soft: #E3B19E;
+    --sage: #5B7A5B;
+    --amber: #D5A04A;
+    --plum: #7A4A6A;
+    --floor-1: #F2EAD3;
+    --floor-2: #EEE6CF;
+    --floor-3: #E8DFC2;
+    --floor-grid: rgba(122,110,85,.10);
+    /* Floor plan walls + wood planks */
+    --wall: #4F8377;
+    --wall-dark: #3A6359;
+    --wall-shadow: rgba(40,80,72,.45);
+    --plank-base-1: #E9D5AC;
+    --plank-base-2: #DFC796;
+    --plank-grout: rgba(120, 88, 50, .22);
+    --plank-shade-a: rgba(230, 205, 165, .35);
+    --plank-shade-b: rgba(180, 140, 90, .18);
+    --plank-shade-c: rgba(210, 175, 130, .25);
+    --plank-shade-d: rgba(170, 125, 75, .15);
+
+    --display: 'Bricolage Grotesque', system-ui, sans-serif;
+    --sans: 'Geist', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  /* Theme overrides — applied to .vo-app[data-theme] */
+  .vo-app[data-theme="nordic"]{
+    --cream: #E5E9EC;
+    --cream-2: #D6DCE0;
+    --cream-3: #C4CDD3;
+    --paper:  #F4F6F8;
+    --rule:   #B7C1C8;
+    --rule-soft: #D2DAE0;
+    --mute:   #7E8C95;
+    --terra:  #3D6B8F;
+    --terra-soft: #A8C5DC;
+    --sage:   #6F8A8B;
+    --amber:  #C9A05E;
+    --plum:   #5E5A77;
+    --floor-1: #E2EAEF;
+    --floor-2: #D6E0E6;
+    --floor-3: #C7D3DB;
+    --floor-grid: rgba(60,80,95,.10);
+    --wall: #2E4756;
+    --wall-dark: #1F3441;
+    --wall-shadow: rgba(25,40,55,.45);
+    --plank-base-1: #D5DDE3;
+    --plank-base-2: #C2CDD5;
+    --plank-grout: rgba(50,75,90,.22);
+    --plank-shade-a: rgba(220, 230, 238, .35);
+    --plank-shade-b: rgba(140, 165, 180, .14);
+    --plank-shade-c: rgba(195, 210, 220, .25);
+    --plank-shade-d: rgba(120, 145, 160, .12);
+  }
+  .vo-app[data-theme="studio"]{
+    --cream: #E8DECE;
+    --cream-2: #D9CCB4;
+    --cream-3: #C6B696;
+    --paper:  #F2EBDB;
+    --rule:   #B79E73;
+    --rule-soft: #D0BD96;
+    --mute:   #8C7654;
+    --terra:  #8E4A2A;
+    --terra-soft: #D6A988;
+    --sage:   #3F5A3F;
+    --amber:  #B98740;
+    --plum:   #6E3A55;
+    --floor-1: #DCC396;
+    --floor-2: #CBAE7C;
+    --floor-3: #B89460;
+    --floor-grid: rgba(85,60,30,.14);
+    --wall: #6B3F2C;
+    --wall-dark: #4A2A1B;
+    --wall-shadow: rgba(60,30,15,.5);
+    --plank-base-1: #D7B57F;
+    --plank-base-2: #BE9858;
+    --plank-grout: rgba(60, 35, 15, .28);
+    --plank-shade-a: rgba(220, 185, 130, .32);
+    --plank-shade-b: rgba(120, 80, 35, .15);
+    --plank-shade-c: rgba(190, 150, 95, .28);
+    --plank-shade-d: rgba(100, 65, 25, .14);
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0; height:100%;}
+  body{
+    font-family:var(--sans); color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 20% -10%, var(--cream-2) 0%, transparent 60%),
+      radial-gradient(1000px 600px at 90% 100%, var(--cream-3) 0%, transparent 60%),
+      var(--cream);
+    overflow:hidden;
+    transition: background .35s ease;
+  }
+
+  /* App shell */
+  .vo-app{
+    display:grid; grid-template-rows: 64px 1fr; height:100vh; min-height:600px;
+  }
+
+  /* TopBar */
+  .vo-topbar{
+    display:grid; grid-template-columns: 1fr 1fr 1fr; align-items:center;
+    padding: 0 28px; border-bottom:1px solid var(--rule); background:rgba(251,248,241,.6);
+    backdrop-filter: blur(6px);
+    position:relative; z-index:60;
+  }
+  .vo-topbar__brand{display:flex; align-items:center; gap:10px;}
+  .vo-logo{width:22px; height:22px; border-radius:6px; background:var(--terra); position:relative;}
+  .vo-logo::after{content:""; position:absolute; inset:5px; border:2px solid var(--cream); border-radius:3px;}
+  .vo-topbar__title{font-family:var(--display); font-weight:500; font-size:18px; letter-spacing:-.01em;}
+  .vo-topbar__sep{color:var(--mute); margin:0 2px;}
+  .vo-topbar__org{font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); padding:4px 10px; border:1px solid var(--rule); border-radius:99px; background:rgba(255,255,255,.5);}
+
+  /* Layout switcher (in brand area) */
+  .vo-layout{position:relative; margin-left:10px;}
+  .vo-pill--layout{
+    cursor:pointer; font-family:var(--sans); font-size:13px;
+    padding:6px 12px 6px 12px; background:#fff;
+    color: var(--ink); display:inline-flex; align-items:center; gap:8px;
+    border-radius:99px; border:1px solid var(--rule);
+  }
+  .vo-pill--layout:hover{border-color:var(--ink);}
+  .vo-pill--layout strong{font-weight:600;}
+  .vo-layout__menu{
+    position:absolute; left:0; top: calc(100% + 8px);
+    background:#fff; border:1px solid var(--rule); border-radius:12px;
+    padding:6px; min-width:280px;
+    box-shadow: 0 20px 40px -20px rgba(26,39,56,.35);
+    z-index:50;
+    animation: vo-toast-in .15s ease-out;
+  }
+  .vo-layout__item{
+    display:block; width:100%; text-align:left;
+    background:transparent; border:none; border-radius:8px;
+    padding:10px 12px; cursor:pointer; font-family:var(--sans);
+  }
+  .vo-layout__item:hover{background:var(--cream-2);}
+  .vo-layout__item--active{background:rgba(194,90,58,.10);}
+  .vo-layout__item--active .vo-layout__item-name{color:var(--terra);}
+  .vo-layout__item-name{font-weight:600; font-size:14px; color:var(--ink);}
+  .vo-layout__item-desc{font-size:12px; color:var(--mute); margin-top:2px; line-height:1.4;}
+  .vo-topbar__loc{font-size:14px; color:var(--ink-soft); text-align:center;}
+  .vo-topbar__loc strong{color:var(--ink); font-weight:600;}
+  .vo-topbar__right{display:flex; justify-content:flex-end; gap:10px; align-items:center;}
+
+  .vo-pill{display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:99px; border:1px solid var(--rule); background:rgba(255,255,255,.5); font-family:var(--mono); font-size:12px; letter-spacing:.04em; color:var(--ink-soft); cursor:default;}
+  .vo-pill__dot{width:8px; height:8px; border-radius:50%;}
+  .vo-pill--status{cursor:pointer; border-color:var(--rule); font-family:var(--sans); font-size:13px; padding:6px 12px 6px 10px; color:var(--ink); background:#fff;}
+  .vo-pill--status:hover{border-color:var(--ink);}
+
+  /* Theme switcher */
+  .vo-theme{
+    display:flex; align-items:center; gap:6px;
+    padding:4px 8px 4px 10px;
+    border:1px solid var(--rule); border-radius:99px; background:rgba(255,255,255,.5);
+  }
+  .vo-theme__lab{
+    font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--mute); padding-right:2px;
+  }
+  .vo-theme__opt{
+    display:flex; padding:3px; border-radius:99px; border:1.5px solid transparent;
+    background:transparent; cursor:pointer; transition: border-color .15s;
+  }
+  .vo-theme__opt:hover{border-color:var(--rule);}
+  .vo-theme__opt--active{border-color:var(--ink);}
+  .vo-theme__sw{
+    width:12px; height:12px; border-radius:50%;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.15);
+  }
+  .vo-theme__sw + .vo-theme__sw{ margin-left:-4px; }
+
+  /* Camera toggle */
+  .vo-cam-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 12px; border-radius:99px; border:1px solid var(--rule);
+    background:#fff; color:var(--ink); cursor:pointer;
+    font-family:var(--sans); font-size:13px; position:relative;
+    transition: border-color .15s, background .15s, color .15s;
+  }
+  .vo-cam-btn:hover{border-color:var(--ink);}
+  .vo-cam-btn--on{background:var(--terra); color:#fff; border-color:var(--terra);}
+  .vo-cam-btn--on:hover{background:#A94428; border-color:#A94428;}
+  .vo-cam-btn__live{
+    position:absolute; right:-3px; top:-3px;
+    width:10px; height:10px; border-radius:50%;
+    background:#E14B36; border:2px solid var(--cream);
+    animation: vo-pulse-dot 1.6s ease-in-out infinite;
+  }
+  @keyframes vo-pulse-dot{
+    0%,100%{box-shadow: 0 0 0 0 rgba(225,75,54,.55);}
+    50%    {box-shadow: 0 0 0 6px rgba(225,75,54,0);}
+  }
+
+  /* Avatar webcam video */
+  .vo-avatar__video{
+    position:absolute; inset:2px;
+    width: calc(100% - 4px); height: calc(100% - 4px);
+    border-radius:50%; object-fit:cover;
+    transform: scaleX(-1); /* mirror like a selfie */
+  }
+  .vo-avatar--cam .vo-avatar__bubble{
+    box-shadow:
+      0 4px 10px rgba(26,39,56,.25),
+      inset 0 0 0 2.5px var(--terra);
+  }
+  .vo-avatar__cam-ind{
+    position:absolute; left:-4px; bottom:-4px;
+    width:20px; height:20px; border-radius:50%;
+    background:var(--terra);
+    box-shadow: 0 0 0 3px var(--cream);
+    background-image:
+      linear-gradient(90deg, #fff 0 2.5px, transparent 2.5px),
+      linear-gradient(0deg,  #fff 0 2.5px, transparent 2.5px);
+    background-size: 8px 1.5px, 1.5px 8px;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  .vo-avatar__cam-ind::after{
+    content:""; position:absolute; inset:4.5px;
+    border:1.5px solid #fff; border-radius:50%;
+  }
+
+  /* Shell */
+  .vo-shell{display:grid; grid-template-columns: 320px 1fr; min-height:0;}
+
+  /* Sidebar */
+  .vo-sidebar{
+    padding:24px 18px; border-right:1px solid var(--rule); overflow-y:auto;
+    background: linear-gradient(180deg, rgba(255,255,255,.4), rgba(255,255,255,0) 200px);
+  }
+  .vo-sidebar__head{display:flex; justify-content:space-between; align-items:center; padding:0 6px 8px;}
+  .vo-sidebar__kicker{font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--mute);}
+  .vo-sidebar__count{font-family:var(--display); font-size:24px; font-weight:500;}
+  .vo-sidebar__group{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); padding:18px 6px 8px; border-top:1px solid var(--rule-soft); margin-top:6px;}
+  .vo-sidebar__group:first-of-type{border-top:none; margin-top:0;}
+
+  .vo-member{
+    display:grid; grid-template-columns:36px 1fr 12px; gap:12px; align-items:center;
+    padding:8px 6px; border-radius:8px; cursor:pointer; transition: background .15s;
+  }
+  .vo-member:hover{background:rgba(255,255,255,.6);}
+  .vo-member--audible{background:rgba(194,90,58,.08); box-shadow: inset 2px 0 0 var(--terra);}
+  .vo-member__avatar{
+    width:32px; height:32px; border-radius:50%; color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:600; font-size:11px; letter-spacing:.02em;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.4);
+  }
+  .vo-member__info{min-width:0;}
+  .vo-member__name{font-size:14px; font-weight:500; display:flex; align-items:center; gap:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .vo-member__you{font-family:var(--mono); font-size:9px; letter-spacing:.18em; color:var(--terra); background:rgba(194,90,58,.12); padding:2px 5px; border-radius:3px;}
+  .vo-member__where{font-size:11px; color:var(--mute); margin-top:2px;}
+  .vo-member__stat{width:10px; height:10px; border-radius:50%;}
+  .vo-member__stat--available{background:#5B7A5B;}
+  .vo-member__stat--busy{background:#D5A04A;}
+  .vo-member__stat--dnd{background:#C25A3A;}
+  .vo-member__stat--meeting{background:#7A4A6A;}
+  .vo-member__stat--offline{background:#8B8578;}
+
+  .vo-sidebar__foot{margin-top:24px; padding:14px; border-radius:10px; background:rgba(26,39,56,.04); border:1px solid var(--rule-soft);}
+  .vo-keyhelp{display:grid; gap:8px; font-size:12px; color:var(--ink-soft);}
+  .vo-keyhelp kbd{
+    font-family:var(--mono); font-size:11px; padding:2px 6px; background:#fff; border:1px solid var(--rule);
+    border-bottom-width:2px; border-radius:4px; margin-right:3px; color:var(--ink);
+  }
+
+  /* Main / floor area */
+  .vo-main{position:relative; display:grid; grid-template-rows: 1fr auto; min-width:0; min-height:0;}
+  .vo-floor-wrap{position:relative; min-height:0;}
+
+  /* Viewport — clips the world; world is bigger than viewport and scrolls under the camera.
+     Outside the building (when player is near a corner) shows a darker "street" tone. */
+  .vo-floor-viewport{
+    position:relative;
+    width:100%; height:100%;
+    overflow:hidden;
+    background:
+      repeating-linear-gradient(45deg,
+        rgba(0,0,0,.03) 0px, rgba(0,0,0,.03) 12px,
+        rgba(0,0,0,.06) 12px, rgba(0,0,0,.06) 24px),
+      linear-gradient(180deg, var(--cream-3) 0%, var(--cream-3) 100%);
+    cursor:crosshair;
+  }
+
+  /* The floor itself — the WORLD. Sized in CSS px = layout.floor logical units (1:1).
+     Camera applied via inline transform: translate(cx, cy). Thick teal outer wall
+     so the building reads as an architectural floor plan when seen from above. */
+  .vo-floor{
+    position:absolute;
+    /* left/top set inline to 50% so the camera transform centers around the player */
+    background:
+      /* faint variation across planks (horizontal strips → planks running left/right) */
+      repeating-linear-gradient(0deg,
+        var(--plank-shade-a) 0 24px,
+        var(--plank-shade-b) 24px 48px,
+        var(--plank-shade-c) 48px 72px,
+        var(--plank-shade-d) 72px 96px),
+      /* darker grout lines between planks (every ~48px) */
+      repeating-linear-gradient(0deg,
+        transparent 0 47px,
+        var(--plank-grout) 47px 48px),
+      /* short vertical plank-end seams, staggered via gradient */
+      repeating-linear-gradient(90deg,
+        transparent 0 178px,
+        rgba(0,0,0,.06) 178px 179px,
+        transparent 179px 358px,
+        rgba(0,0,0,.05) 358px 359px),
+      /* base wood color */
+      linear-gradient(180deg, var(--plank-base-1) 0%, var(--plank-base-2) 100%);
+    border: 14px solid var(--wall);
+    border-radius: 6px;
+    box-shadow:
+      0 30px 60px -20px rgba(26,39,56,.35),
+      /* inner shadow gives walls depth from above */
+      inset 0 0 0 1px var(--wall-dark),
+      inset 0 6px 14px -6px var(--wall-shadow),
+      inset 0 -6px 14px -6px var(--wall-shadow),
+      inset 6px 0 14px -6px var(--wall-shadow),
+      inset -6px 0 14px -6px var(--wall-shadow);
+    /* transform transition interpolates between throttled (25fps) state
+       updates so the camera glides instead of stuttering. */
+    transition: transform 70ms linear, background .35s ease, border-color .35s ease;
+    will-change: transform;
+  }
+  .vo-floor__grid{
+    position:absolute; inset:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--floor-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--floor-grid) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at center, #000 70%, transparent 100%);
+    opacity:.4;
+  }
+  .vo-floor__stamp{position:absolute; bottom:16px; font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:rgba(60,60,40,.5); pointer-events:none;}
+  .vo-floor__stamp--l{left:18px;}
+  .vo-floor__stamp--r{right:18px;}
+
+  /* Rooms — drawn as walled enclosures over the wood floor.
+     The thick teal walls match the building outer wall; the room interior
+     is a very subtle tint over the wood so it still reads as the same floor. */
+  .vo-room-wrap{position:absolute; inset:0; pointer-events:none;}
+  .vo-room{
+    position:absolute; pointer-events:auto;
+    border-radius:4px;
+    padding:10px 12px;
+    display:flex; flex-direction:column;
+    border: 6px solid var(--wall);
+    background: rgba(255,255,255,.06);
+    box-shadow:
+      inset 0 0 0 1px var(--wall-dark),
+      0 1px 0 var(--wall-shadow);
+    transition: filter .25s, transform .15s, background .25s;
+    cursor:pointer;
+    font-family:var(--mono);
+  }
+  .vo-room:hover{filter: brightness(1.04);}
+  .vo-room--meeting{background:rgba(46, 71, 86, .08);}
+  .vo-room--focus  {background:rgba(213,160,74,.12);}
+  .vo-room--social {background:rgba(91,122,91,.10);}
+  .vo-room--here{
+    box-shadow:
+      inset 0 0 0 1px var(--wall-dark),
+      0 0 0 3px rgba(194,90,58,.5),
+      0 0 40px rgba(194,90,58,.25);
+  }
+  .vo-room--dimmed{filter:saturate(.5) brightness(.96) opacity(.7);}
+
+  /* Door overlay — sits exactly on a wall segment, painted with the floor
+     color so it visually "cuts" a gap in the wall. */
+  .vo-room__door{
+    position:absolute; z-index:3;
+    background: var(--plank-base-2);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
+    pointer-events:none;
+  }
+  .vo-room__door[data-side="top"]   { border-radius: 0 0 3px 3px; }
+  .vo-room__door[data-side="bottom"]{ border-radius: 3px 3px 0 0; }
+  .vo-room__door[data-side="left"]  { border-radius: 0 3px 3px 0; }
+  .vo-room__door[data-side="right"] { border-radius: 3px 0 0 3px; }
+
+  /* Door swing arc — quarter-circle indicating which way the door opens.
+     Drawn just inside the room so it doesn't visually intrude into the hall. */
+  .vo-room__door-arc{
+    position:absolute; pointer-events:none;
+    width:34px; height:34px;
+    border: 1.5px dashed rgba(40,60,55,.45);
+    border-radius: 50%;
+  }
+  .vo-room__door[data-side="bottom"] .vo-room__door-arc{
+    left:50%; top:100%;
+    transform: translate(-50%, -100%);
+    clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 50%, 0 100%);
+  }
+  .vo-room__door[data-side="top"] .vo-room__door-arc{
+    left:50%; bottom:100%;
+    transform: translate(-50%, 100%);
+    clip-path: polygon(0 50%, 50% 50%, 100% 100%, 0 100%);
+  }
+  .vo-room__door[data-side="left"] .vo-room__door-arc{
+    right:100%; top:50%;
+    transform: translate(100%, -50%);
+    clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 50%);
+  }
+  .vo-room__door[data-side="right"] .vo-room__door-arc{
+    left:100%; top:50%;
+    transform: translate(-100%, -50%);
+    clip-path: polygon(0 0, 50% 0, 50% 50%, 100% 100%, 0 100%);
+  }
+
+  /* Locked door — solid plug in the wall + a lock badge */
+  .vo-room__door.is-locked{
+    background: var(--wall-dark);
+    box-shadow:
+      inset 0 0 0 1px rgba(0,0,0,.5),
+      0 0 0 1px var(--wall);
+  }
+  .vo-room__door.is-locked .vo-room__door-arc{ display:none; }
+  .vo-room__door-lock{
+    position:absolute; left:50%; top:50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    background: var(--terra);
+    color:#fff;
+    padding: 2px 4px;
+    border-radius: 4px;
+    line-height:1;
+    box-shadow: 0 1px 3px rgba(0,0,0,.4);
+    z-index: 2;
+  }
+  .vo-room__door[data-side="left"] .vo-room__door-lock,
+  .vo-room__door[data-side="right"] .vo-room__door-lock{
+    /* on side walls keep lock pip oriented correctly */
+    font-size: 8px;
+    padding: 1px 2px;
+  }
+
+  /* Lock icon in the room name */
+  .vo-room__lock-ico{
+    margin-right: 4px;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,.2));
+  }
+
+  /* Lock toggle button — only visible inside a lockable room you're standing in */
+  .vo-room__lock-btn{
+    position:absolute; right:6px; bottom:6px;
+    font-family: var(--sans);
+    font-size: 11px; font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--rule);
+    background: #fff;
+    color: var(--ink);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    z-index: 5;
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  .vo-room__lock-btn:hover{ border-color: var(--ink); }
+  .vo-room__lock-btn.is-locked{
+    background: var(--terra);
+    color: #fff;
+    border-color: var(--terra);
+  }
+  .vo-room__lock-btn.is-locked:hover{ background: #A94428; border-color:#A94428; }
+
+  /* Room highlighted as locked: a subtle red tint outline */
+  .vo-room--locked{
+    background: rgba(194,90,58,.06);
+  }
+  .vo-room--locked.vo-room--meeting,
+  .vo-room--locked.vo-room--focus{
+    box-shadow:
+      inset 0 0 0 1px var(--wall-dark),
+      0 0 0 2px rgba(194,90,58,.35),
+      0 1px 0 var(--wall-shadow);
+  }
+
+  .vo-room__head{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+  .vo-room__name{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#2A3B52; font-weight:600;}
+  .vo-room--focus .vo-room__name{color:#664718;}
+  .vo-room--social .vo-room__name{color:#324632;}
+  .vo-room__badge{font-size:9px; letter-spacing:.1em; text-transform:uppercase; padding:2px 6px; border-radius:3px; background:rgba(255,255,255,.7); color:#2A3B52;}
+  .vo-room__badge--live{background:var(--terra); color:#fff;}
+  .vo-room__foot{margin-top:auto; display:flex; justify-content:space-between; font-size:10px; letter-spacing:.06em; opacity:.7; color:#2A3B52;}
+  .vo-room--focus .vo-room__foot{color:#664718;}
+  .vo-room--social .vo-room__foot{color:#324632;}
+
+  /* Desks — workstations with monitor, keyboard, mouse, chair */
+  .vo-desk{
+    position:absolute; width:74px; height:60px; pointer-events:auto; cursor:pointer;
+    transform: translate(-50%, -50%);
+    z-index:2;
+  }
+  .vo-desk__monitor{
+    position:absolute; left:50%; top:0; transform:translateX(-50%);
+    width:48px; height:10px;
+    background: linear-gradient(180deg, #2D3137, #16181C);
+    border-radius:2px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .vo-desk__monitor::after{
+    /* base/foot */
+    content:""; position:absolute; left:50%; bottom:-3px; transform:translateX(-50%);
+    width:14px; height:3px; background:#16181C; border-radius:0 0 2px 2px;
+  }
+  .vo-desk__screen{
+    position:absolute; inset:1.5px 2px;
+    background: linear-gradient(180deg, #4A6F8E, #2B4660);
+    border-radius:1px;
+    box-shadow: 0 0 6px rgba(74,111,142,.5);
+  }
+  .vo-desk--mine .vo-desk__screen{
+    background: linear-gradient(180deg, #C25A3A, #8B3A22);
+    box-shadow: 0 0 8px rgba(194,90,58,.6);
+  }
+  .vo-desk__surface{
+    position:absolute; left:0; right:0; top:13px; height:30px; border-radius:5px;
+    background: linear-gradient(180deg, #DCC9A0, #BFA678);
+    border:1px solid rgba(122,110,85,.55);
+    box-shadow: inset 0 -3px 4px rgba(0,0,0,.07);
+  }
+  .vo-desk--mine .vo-desk__surface{
+    background: linear-gradient(180deg, #DFC4A0, #BF9B6F);
+    border-color: rgba(194,90,58,.55);
+    box-shadow: inset 0 -3px 4px rgba(0,0,0,.07), 0 0 0 2px rgba(194,90,58,.35);
+  }
+  .vo-desk--vacant .vo-desk__surface{
+    background: linear-gradient(180deg, #ECE3CC, #D8CCAB);
+    opacity:.7;
+    border-style:dashed;
+  }
+  .vo-desk__keyboard{
+    position:absolute; left:50%; top:7px; transform:translateX(-50%);
+    width:32px; height:7px; background:#2D3137; border-radius:1.5px;
+    box-shadow: inset 0 0 0 .5px rgba(255,255,255,.08);
+  }
+  .vo-desk__mouse{
+    position:absolute; right:10px; top:18px;
+    width:5px; height:7px; background:#3D3F42; border-radius:50%;
+  }
+  .vo-desk__lamp{
+    position:absolute; left:9px; top:3px;
+    width:6px; height:7px; border-radius:50% 50% 1px 1px;
+    background: var(--terra);
+    box-shadow: 0 0 10px rgba(194,90,58,.7);
+  }
+  .vo-desk__mug{
+    position:absolute; right:8px; top:3px;
+    width:6px; height:6px; background:#EDE6D4; border-radius:50%;
+    border:1px solid #8B7556;
+  }
+  .vo-desk__chair{
+    position:absolute; left:50%; bottom:0; transform:translateX(-50%);
+    width:28px; height:14px;
+    background: linear-gradient(180deg, #4D3A30 0%, #3A2D24 100%);
+    border-radius:6px 6px 9px 9px;
+    box-shadow:
+      inset 0 2px 0 rgba(0,0,0,.25),
+      0 2px 3px rgba(0,0,0,.15);
+  }
+  .vo-desk__chair::after{
+    /* arm rests */
+    content:""; position:absolute; left:-3px; right:-3px; top:4px;
+    height:5px; border-left:3px solid #2A1F18; border-right:3px solid #2A1F18;
+    border-radius:2px;
+  }
+  .vo-desk__tag{
+    position:absolute; left:50%; top:-18px; transform:translateX(-50%);
+    font-family:var(--mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#fff;
+    background:var(--terra); padding:3px 7px; border-radius:3px;
+    white-space:nowrap; box-shadow: 0 2px 4px rgba(194,90,58,.4);
+  }
+
+  /* Plant */
+  .vo-plant{
+    position:absolute; width:20px; height:20px; border-radius:50%;
+    background: radial-gradient(circle at 30% 30%, #94B080, #5E7E50);
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,.1);
+    pointer-events:none;
+    transform: translate(-50%, -50%);
+  }
+  .vo-plant::after{
+    content:""; position:absolute; left:50%; bottom:-7px; transform:translateX(-50%);
+    width:14px; height:8px; background:#A07458; border-radius:0 0 3px 3px;
+  }
+
+  /* Avatars */
+  .vo-avatar{
+    position:absolute; pointer-events:auto;
+    transform: translate(-50%, -50%);
+    transition: left .12s linear, top .12s linear;
+    z-index:5;
+    cursor:pointer;
+  }
+  .vo-avatar:hover .vo-avatar__bubble{
+    transform: scale(1.08);
+    box-shadow:
+      0 8px 18px rgba(26,39,56,.35),
+      inset 0 0 0 2.5px rgba(255,255,255,.65);
+  }
+  .vo-avatar__bubble{
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .vo-avatar__bubble{
+    width:52px; height:52px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:600; font-size:17px;
+    box-shadow:
+      0 5px 12px rgba(26,39,56,.3),
+      inset 0 0 0 2.5px rgba(255,255,255,.5);
+    position:relative;
+  }
+  .vo-avatar__status{
+    position:absolute; right:-2px; bottom:-2px;
+    width:15px; height:15px; border-radius:50%;
+    box-shadow: 0 0 0 3px var(--cream);
+  }
+  .vo-avatar__name{
+    position:absolute; left:50%; top:100%; transform:translateX(-50%);
+    margin-top:10px;
+    font-size:13px; font-weight:500; white-space:nowrap;
+    background:rgba(255,255,255,.9); padding:3px 10px; border-radius:99px;
+    color:var(--ink); box-shadow:0 2px 4px rgba(0,0,0,.08);
+  }
+  .vo-avatar__vol{
+    position:absolute; left:50%; top:-32px; transform:translateX(-50%);
+    font-family:var(--mono); font-size:11px; letter-spacing:.08em;
+    background:var(--terra); color:#fff; padding:3px 8px; border-radius:99px;
+    white-space:nowrap; pointer-events:none;
+  }
+  .vo-avatar--you{z-index:10; transition: left 70ms linear, top 70ms linear;}
+  .vo-avatar--you .vo-avatar__name{background:var(--terra); color:#fff;}
+  .vo-avatar--dim{opacity:.35;}
+
+  /* Player pulse (audio range) */
+  .vo-avatar__pulse{
+    position:absolute; left:50%; top:50%;
+    width: calc(60 / 1280 * 2 * 100%);
+    height: 0;
+    padding-bottom: calc(60 / 720 * 2 * 100%);
+    border-radius:50%;
+    border:1.5px dashed rgba(194,90,58,.4);
+    transform: translate(-50%, -50%);
+    animation: vo-pulse 2.4s ease-in-out infinite;
+    pointer-events:none;
+    /* Note: width/height set in fixed px-equivalent via a scaling trick below */
+    width: 240px; height: 240px;
+    padding-bottom: 0;
+  }
+  @keyframes vo-pulse{
+    0%, 100% { transform: translate(-50%, -50%) scale(.9); opacity:.55; }
+    50%      { transform: translate(-50%, -50%) scale(1.05); opacity:1; }
+  }
+
+  /* Audio waves coming from talking NPCs (legacy, used inside meeting panel) */
+  .vo-waves{
+    position:absolute; left:50%; top:-22px; transform:translateX(-50%);
+    display:flex; gap:3px; align-items:flex-end; height:18px; pointer-events:none;
+  }
+  .vo-waves span{
+    width:3px; background:var(--terra); border-radius:2px;
+    height:6px;
+  }
+  .vo-waves--on span{
+    animation: vo-wave 1s ease-in-out infinite;
+  }
+  .vo-waves--on span:nth-child(2){animation-delay: .15s;}
+  .vo-waves--on span:nth-child(3){animation-delay: .3s;}
+  @keyframes vo-wave{
+    0%, 100% { height:4px; }
+    50%      { height:16px; }
+  }
+
+  /* Talking indicator — pulsing ring around avatar bubble */
+  .vo-avatar--talking .vo-avatar__bubble::before{
+    content:"";
+    position:absolute; inset:-7px;
+    border-radius:50%;
+    border:2.5px solid var(--sage);
+    animation: vo-talking-ring 1.4s ease-out infinite;
+    pointer-events:none;
+  }
+  .vo-avatar--talking.vo-avatar--you .vo-avatar__bubble::before{
+    border-color: var(--terra);
+  }
+  @keyframes vo-talking-ring{
+    0%   { transform: scale(.9);  opacity:1; }
+    100% { transform: scale(1.6); opacity:0; }
+  }
+
+  /* Chat-style speech bubble attached to talking avatar */
+  .vo-speech{
+    position:absolute; left:calc(50% + 22px); top:-18px;
+    background:#fff; border-radius:14px;
+    padding: 6px 10px;
+    display:flex; gap:4px; align-items:center;
+    box-shadow: 0 4px 12px rgba(0,0,0,.18);
+    z-index:2;
+  }
+  .vo-speech::after{
+    content:"";
+    position:absolute; left:8px; bottom:-4px;
+    width:8px; height:8px; background:#fff;
+    transform: rotate(45deg);
+    box-shadow: 2px 2px 3px rgba(0,0,0,.05);
+  }
+  .vo-speech span{
+    width:5px; height:5px; border-radius:50%;
+    background: var(--sage);
+    animation: vo-bounce 1.1s ease-in-out infinite;
+  }
+  .vo-speech span:nth-child(2){animation-delay:.12s;}
+  .vo-speech span:nth-child(3){animation-delay:.24s;}
+  @keyframes vo-bounce{
+    0%,100% { transform: translateY(0); opacity:.45; }
+    50%     { transform: translateY(-3px); opacity:1; }
+  }
+  .vo-avatar--you .vo-speech span{ background: var(--terra); }
+
+  /* Carpets — define soft zones under desk clusters */
+  .vo-carpet{
+    position:absolute; pointer-events:none; border-radius:14px; z-index:1;
+    border:1px dashed transparent;
+  }
+  .vo-carpet--warm{
+    background: radial-gradient(ellipse at center, rgba(194,90,58,.10), rgba(194,90,58,.04));
+    border-color: rgba(194,90,58,.15);
+  }
+  .vo-carpet--cool{
+    background: radial-gradient(ellipse at center, rgba(62,90,135,.10), rgba(62,90,135,.04));
+    border-color: rgba(62,90,135,.15);
+  }
+  .vo-carpet--sage{
+    background: radial-gradient(ellipse at center, rgba(91,122,91,.12), rgba(91,122,91,.04));
+    border-color: rgba(91,122,91,.18);
+  }
+
+  /* Department zones — very soft washes over the wood floor */
+  .vo-zone{
+    position:absolute; pointer-events:none; border-radius:8px; z-index:1;
+    border:1px dashed transparent;
+  }
+  .vo-zone--warm{
+    background: rgba(194,90,58,.06);
+    border-color: rgba(194,90,58,.18);
+  }
+  .vo-zone--cool{
+    background: rgba(46, 71, 86, .07);
+    border-color: rgba(46, 71, 86, .22);
+  }
+  .vo-zone--sage{
+    background: rgba(91,122,91,.08);
+    border-color: rgba(91,122,91,.22);
+  }
+  .vo-zone--plum{
+    background: rgba(122,74,106,.06);
+    border-color: rgba(122,74,106,.20);
+  }
+  .vo-zone__label{
+    position:absolute; left:18px; top:12px;
+    font-family:var(--mono); font-size:11px; letter-spacing:.28em; text-transform:uppercase;
+    color: rgba(40,40,30,.42);
+    user-select:none;
+  }
+
+  /* Kitchen + entry fixtures */
+  .vo-fixture{position:absolute; pointer-events:none; transform: translate(-50%, -50%); z-index:2;}
+  .vo-fixture__label{
+    position:absolute; left:50%; top:100%; transform:translateX(-50%); margin-top:4px;
+    font-family:var(--mono); font-size:8px; letter-spacing:.18em; text-transform:uppercase;
+    color:rgba(60,60,40,.55); white-space:nowrap;
+  }
+  .vo-fixture--coffee{
+    width:32px; height:22px; border-radius:3px;
+    background: linear-gradient(180deg, #3D3F42, #1E2024);
+    border:1px solid #16181C;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.1);
+  }
+  .vo-fixture--coffee::before{
+    content:""; position:absolute; left:3px; right:3px; top:5px;
+    height:6px; background: rgba(194,90,58,.7); border-radius:1px;
+  }
+  .vo-fixture--coffee::after{
+    content:""; position:absolute; left:50%; bottom:2px; transform:translateX(-50%);
+    width:8px; height:5px; background:#16181C; border-radius:1px;
+  }
+  .vo-fixture--cooler{
+    width:22px; height:30px; border-radius:3px 3px 1px 1px;
+    background: linear-gradient(180deg, #BCD2E2 0%, #BCD2E2 60%, #5A7088 60%, #3D4D60 100%);
+    border:1px solid rgba(0,0,0,.25);
+  }
+  .vo-fixture--counter{
+    width:80px; height:32px; border-radius:4px;
+    background: linear-gradient(180deg, #EDE6D4, #D8CCAB);
+    border:1px solid rgba(122,110,85,.5);
+    box-shadow: inset 0 -3px 4px rgba(0,0,0,.06);
+  }
+  .vo-fixture--counter::after{
+    content:""; position:absolute; left:8px; top:8px; width:14px; height:14px;
+    border-radius:50%; background:#9AB8C7; border:1px solid #5A7088;
+  }
+
+  /* Sofa fixture (lounge) */
+  .vo-fixture--sofa{
+    border-radius:8px;
+    background: linear-gradient(180deg, #B58F6F, #8E6B4D);
+    border:1px solid #6B4E36;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.15),
+      inset 0 -3px 0 rgba(0,0,0,.18),
+      0 2px 4px rgba(0,0,0,.15);
+    transform: translate(0, 0);
+  }
+  .vo-fixture--sofa::after{
+    /* back rest */
+    content:""; position:absolute; left:6px; right:6px; top:2px; height: 35%;
+    background: rgba(255,255,255,.08); border-radius: 6px 6px 0 0;
+  }
+  .vo-fixture--sofa::before{
+    /* cushion seam */
+    content:""; position:absolute; left:50%; top:35%; bottom:6px;
+    width:1px; background: rgba(0,0,0,.25);
+  }
+
+  /* Low coffee table */
+  .vo-fixture--table{
+    border-radius:6px;
+    background: linear-gradient(180deg, #EAE1CA, #D8CCAB);
+    border:1px solid rgba(122,110,85,.5);
+    box-shadow: inset 0 -2px 4px rgba(0,0,0,.08);
+  }
+
+  /* Stand-up meeting table */
+  .vo-fixture--standup-table{
+    border-radius:6px;
+    background: linear-gradient(180deg, #C29A6F, #A37D52);
+    border:1px solid rgba(122,110,85,.6);
+    box-shadow: inset 0 -3px 4px rgba(0,0,0,.1);
+  }
+  .vo-fixture--standup-table::after{
+    content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:6px; height:6px; border-radius:50%; background: rgba(0,0,0,.18);
+  }
+
+  /* Conference table — long rectangular table for meeting rooms */
+  .vo-fixture--conf-table{
+    border-radius:4px;
+    background: linear-gradient(180deg, #4D3A2A, #2F2418);
+    border:1px solid #1E1610;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.08),
+      inset 0 -3px 0 rgba(0,0,0,.2),
+      0 2px 4px rgba(0,0,0,.25);
+      transform: translate(0, 0);
+  }
+  .vo-fixture--conf-table::before{
+    /* glossy reflection */
+    content:""; position:absolute; left:6px; right:6px; top:2px; height:4px;
+    background: linear-gradient(180deg, rgba(255,255,255,.18), transparent);
+    border-radius: 2px;
+  }
+  .vo-fixture--conf-table::after{
+    /* mini items on table — laptops, papers */
+    content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:70%; height:46%;
+    background-image:
+      radial-gradient(ellipse 60% 100% at 15% 50%, rgba(70,110,145,.55) 0 50%, transparent 60%),
+      radial-gradient(ellipse 60% 100% at 50% 50%, rgba(213,160,74,.5)  0 50%, transparent 60%),
+      radial-gradient(ellipse 60% 100% at 85% 50%, rgba(220,220,220,.55) 0 50%, transparent 60%);
+    background-repeat:no-repeat;
+  }
+
+  /* Huddle round table */
+  .vo-fixture--huddle-table{
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #C29A6F, #8A5E38);
+    border:1px solid rgba(60,30,15,.6);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.15),
+      inset 0 -4px 0 rgba(0,0,0,.18),
+      0 2px 4px rgba(0,0,0,.18);
+      transform: translate(0, 0);
+  }
+
+  /* Bookshelf — narrow rectangle, runs along a wall */
+  .vo-fixture--shelf{
+    border-radius:2px;
+    background:
+      repeating-linear-gradient(0deg,
+        rgba(0,0,0,.18) 0 1px,
+        transparent 1px 11px),
+      linear-gradient(180deg, #8A5F3A, #6B4828);
+    border:1px solid #3F2A18;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 2px 4px rgba(0,0,0,.15);
+      transform: translate(0, 0);
+  }
+  .vo-fixture--shelf::after{
+    /* book spines */
+    content:""; position:absolute; inset: 2px 3px;
+    background:
+      repeating-linear-gradient(90deg,
+        rgba(194,90,58,.85) 0 4px,
+        rgba(79,131,119,.85) 4px 8px,
+        rgba(213,160,74,.85) 8px 12px,
+        rgba(122,74,106,.85) 12px 16px,
+        rgba(91,122,91,.85) 16px 20px,
+        rgba(42,59,82,.85) 20px 24px);
+    opacity:.85;
+    border-radius: 1px;
+  }
+
+  /* Reception desk — wider counter with computer */
+  .vo-fixture--reception{
+    border-radius:6px 6px 2px 2px;
+    background: linear-gradient(180deg, #DCC9A0 0%, #BF9B6F 60%, #8E6D44 60%, #6F5132 100%);
+    border:1px solid rgba(60,40,20,.65);
+    box-shadow:
+      inset 0 2px 0 rgba(255,255,255,.18),
+      0 2px 4px rgba(0,0,0,.18);
+      transform: translate(0, 0);
+  }
+  .vo-fixture--reception::before{
+    /* computer screen */
+    content:""; position:absolute; left:10%; top:18%; width:24%; height:30%;
+    background: linear-gradient(180deg, #2A4660, #1E3450);
+    border:1px solid #0D1820;
+    border-radius:1.5px;
+    box-shadow: 0 0 6px rgba(74,111,142,.4);
+  }
+  .vo-fixture--reception::after{
+    /* notepad / papers */
+    content:""; position:absolute; right:12%; top:24%; width:22%; height:20%;
+    background: #F8F1E0;
+    border:1px solid rgba(80,55,30,.4);
+    border-radius:1px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.15);
+  }
+
+  /* Office chair — sized close to avatar (52px) so the scale reads correctly.
+     Top-down view: dark seat with a rounded back. */
+  .vo-fixture--chair{
+    width:32px; height:32px; border-radius: 50% 50% 8px 8px;
+    background:
+      radial-gradient(circle at 35% 35%, rgba(255,255,255,.18) 0 5%, transparent 30%),
+      linear-gradient(180deg, #3A3F46, #1A1D22);
+    border:1px solid #000;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.12),
+      inset 0 -4px 0 rgba(0,0,0,.25),
+      0 2px 4px rgba(0,0,0,.3);
+    transform: translate(-50%, -50%);
+  }
+  .vo-fixture--chair::before{
+    /* backrest curve */
+    content:""; position:absolute;
+    left:5px; right:5px; top:-3px;
+    height:10px;
+    background: linear-gradient(180deg, #1A1D22, #0D0F12);
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 1px 1px rgba(0,0,0,.4);
+  }
+  .vo-fixture--chair-light{
+    width:32px; height:32px; border-radius: 50% 50% 8px 8px;
+    background:
+      radial-gradient(circle at 35% 35%, rgba(255,255,255,.3) 0 5%, transparent 30%),
+      linear-gradient(180deg, #F2E6CD, #C9B98E);
+    border:1px solid #8B7556;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.35),
+      inset 0 -3px 0 rgba(0,0,0,.12),
+      0 2px 4px rgba(0,0,0,.2);
+    transform: translate(-50%, -50%);
+  }
+  .vo-fixture--chair-light::before{
+    content:""; position:absolute;
+    left:5px; right:5px; top:-3px;
+    height:10px;
+    background: linear-gradient(180deg, #D9C798, #B19872);
+    border-radius: 14px 14px 0 0;
+    border:1px solid #8B7556; border-bottom:none;
+    box-shadow: 0 1px 1px rgba(0,0,0,.18);
+  }
+
+  /* Floor desk (sit-anywhere flex desk) — wider than vo-desk, no monitor */
+  .vo-fixture--flex-desk{
+    border-radius:4px;
+    background: linear-gradient(180deg, #DCC9A0, #BFA678);
+    border:1px solid rgba(122,110,85,.55);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.15),
+      inset 0 -2px 3px rgba(0,0,0,.08),
+      0 1px 2px rgba(0,0,0,.15);
+      transform: translate(0, 0);
+  }
+
+  /* Low office divider (privacy screen) */
+  .vo-fixture--divider{
+    border-radius:2px;
+    background:
+      repeating-linear-gradient(90deg,
+        rgba(255,255,255,.03) 0 4px,
+        transparent 4px 8px),
+      linear-gradient(180deg, rgba(70,100,115,.55), rgba(40,60,80,.55));
+    border:1px solid rgba(30,40,55,.6);
+    box-shadow: 0 1px 2px rgba(0,0,0,.15);
+      transform: translate(0, 0);
+  }
+
+  /* Auditorium stage (slightly raised platform) */
+  .vo-fixture--stage{
+    border-radius:3px;
+    background: linear-gradient(180deg, #6E4B2E, #4A3220);
+    border:1px solid #2A1A0C;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.1),
+      0 3px 0 rgba(0,0,0,.25),
+      0 4px 8px rgba(0,0,0,.2);
+      transform: translate(0, 0);
+  }
+  .vo-fixture--stage::after{
+    content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:18%; height:60%;
+    background:
+      radial-gradient(ellipse at center, rgba(213,160,74,.6) 0 30%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  /* Whiteboard on wheels (standalone) */
+  .vo-fixture--whiteboard-stand{
+    border-radius:3px;
+    background: linear-gradient(180deg, #fff, #ECE6D8);
+    border:1px solid rgba(0,0,0,.18);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.6),
+      0 2px 4px rgba(0,0,0,.18);
+      transform: translate(0, 0);
+  }
+  .vo-fixture--whiteboard-stand::after{
+    /* sketched diagram on board */
+    content:""; position:absolute; inset:3px;
+    background-image:
+      linear-gradient(90deg, rgba(91,122,91,.6) 0 16px, transparent 16px 26px,
+                              rgba(194,90,58,.6) 26px 38px, transparent 38px 100%),
+      linear-gradient(90deg, transparent 0 5px, rgba(42,59,82,.5) 5px 24px, transparent 24px);
+    background-size: 100% 50%, 100% 50%;
+    background-position: top, bottom;
+    background-repeat: no-repeat;
+    border-radius: 1px;
+  }
+
+  /* Bigger pottted plant (different from .vo-plant) */
+  .vo-fixture--big-plant{
+    border-radius:50% 50% 8% 8%;
+    background:
+      radial-gradient(circle at 35% 30%, #9DBC85, #5E7E50 60%, #3D5A33 95%);
+    border:1px solid #2C4426;
+    box-shadow:
+      inset 0 -4px 0 rgba(0,0,0,.18),
+      0 2px 4px rgba(0,0,0,.15);
+      transform: translate(0, 0);
+  }
+  .vo-fixture--big-plant::after{
+    content:""; position:absolute; left:50%; bottom:-5px; transform:translateX(-50%);
+    width:60%; height:9px;
+    background: linear-gradient(180deg, #A07458, #6F4A35);
+    border-radius: 0 0 4px 4px;
+  }
+
+  /* Rug — soft floor accent under sofa clusters */
+  .vo-fixture--rug{
+    border-radius:6px;
+    background:
+      repeating-linear-gradient(45deg,
+        rgba(194,90,58,.18) 0 8px,
+        rgba(213,160,74,.12) 8px 16px),
+      rgba(237, 224, 195, .35);
+    border:1px solid rgba(140,100,55,.18);
+    box-shadow: inset 0 0 0 4px rgba(255,255,255,.06);
+      transform: translate(0, 0);
+  }
+
+  /* Whiteboard in meeting rooms */
+  .vo-whiteboard{
+    position:absolute; width:46px; height:6px;
+    background: linear-gradient(180deg, #fff, #ECE6D8);
+    border:1px solid rgba(0,0,0,.15);
+    border-radius:1px;
+    pointer-events:none;
+    z-index:2;
+  }
+  .vo-whiteboard::after{
+    content:""; position:absolute; left:4px; right:8px; top:1.5px;
+    height:1.5px; background: rgba(91,122,91,.5);
+    border-radius:1px;
+  }
+
+  /* Entry door — gap in the outer wall with door swing arc */
+  .vo-floor__door{
+    position:absolute; left:48%; bottom:-14px;
+    width:84px; height:14px;
+    background: var(--plank-base-2);
+    border-left: 6px solid var(--wall);
+    border-right: 6px solid var(--wall);
+    pointer-events:none;
+    z-index: 4;
+  }
+  .vo-floor__door::after{
+    /* door panel */
+    content:""; position:absolute; left:6px; top:-1px;
+    width: 56px; height: 4px;
+    background: var(--wall-dark);
+    border-radius: 2px;
+    transform-origin: 0 50%;
+    transform: rotate(-22deg);
+    box-shadow: 0 1px 0 rgba(0,0,0,.2);
+  }
+  .vo-floor__door::before{
+    content:""; position:absolute; left:6px; top:0;
+    width: 56px; height: 28px;
+    border-top: 1.5px dashed rgba(60,60,40,.35);
+    border-right: 1.5px dashed rgba(60,60,40,.35);
+    border-radius: 0 0 0 28px;
+    transform: scaleY(-1);
+    pointer-events:none;
+  }
+  .vo-floor__door-label{
+    position:absolute; left:50%; top:-26px; transform:translateX(-50%);
+    font-family:var(--mono); font-size:9px; letter-spacing:.2em; text-transform:uppercase;
+    color: #fff; background: var(--wall); padding: 2px 8px; border-radius: 3px;
+    white-space:nowrap; pointer-events:none;
+    box-shadow: 0 1px 2px rgba(0,0,0,.25);
+  }
+
+  /* Wall-mounted screens */
+  .vo-screen{
+    position:absolute; cursor:pointer;
+    border-radius:2px;
+    background: linear-gradient(180deg, #1E232B 0%, #0F1318 100%);
+    border:1px solid #000;
+    box-shadow:
+      0 2px 4px rgba(0,0,0,.35),
+      inset 0 1px 0 rgba(255,255,255,.06);
+    z-index:3;
+    transition: transform .15s, box-shadow .2s;
+    overflow:visible;
+  }
+  .vo-screen::after{
+    /* wall mount bar */
+    content:""; position:absolute; left:50%; top:-3px; transform:translateX(-50%);
+    width:60%; height:2px; background: rgba(60,60,40,.45); border-radius:1px;
+  }
+  .vo-screen:hover{transform: translateY(-1px) scale(1.03); box-shadow: 0 4px 10px rgba(0,0,0,.4);}
+  .vo-screen__display{
+    position:absolute; inset:1.5px;
+    background: linear-gradient(135deg, #2A4660 0%, #1E3450 100%);
+    border-radius:1px;
+    overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .vo-screen__title{
+    font-family:var(--mono); font-size:6px; letter-spacing:.06em;
+    color:rgba(255,255,255,.85); text-align:center; padding:0 4px;
+    text-transform:uppercase; line-height:1.15;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    width:100%;
+  }
+  .vo-screen__off{
+    width:4px; height:4px; border-radius:50%;
+    background: rgba(255,255,255,.25);
+  }
+  .vo-screen__label{
+    position:absolute; left:50%; top:calc(100% + 3px); transform:translateX(-50%);
+    font-family:var(--mono); font-size:8px; letter-spacing:.16em; text-transform:uppercase;
+    color: rgba(60,60,40,.55); white-space:nowrap; pointer-events:none;
+  }
+  .vo-screen--big .vo-screen__title{font-size:8px;}
+  .vo-screen--big{box-shadow: 0 4px 10px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.08);}
+
+  .vo-screen--live{
+    box-shadow:
+      0 0 0 2px var(--terra),
+      0 0 24px rgba(225,75,54,.5),
+      0 4px 10px rgba(0,0,0,.4);
+  }
+  .vo-screen--live .vo-screen__display{
+    background: linear-gradient(135deg, #6A2A1E 0%, #3D1A12 100%);
+  }
+  .vo-screen__live{
+    position:absolute; right:-2px; top:-14px;
+    background:#E14B36; color:#fff;
+    font-family:var(--mono); font-size:8px; letter-spacing:.18em;
+    padding:2px 5px; border-radius:2px;
+    display:flex; align-items:center; gap:4px;
+    box-shadow: 0 2px 4px rgba(225,75,54,.45);
+  }
+  .vo-screen__live-dot{
+    width:5px; height:5px; border-radius:50%; background:#fff;
+    animation: vo-pulse-dot-fast 1s ease-in-out infinite;
+  }
+  @keyframes vo-pulse-dot-fast{ 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+  /* Presentation overlay */
+  .vo-present{
+    position:fixed; inset:0; z-index:200;
+    background: rgba(15, 19, 24, .85);
+    backdrop-filter: blur(8px);
+    display:flex; align-items:center; justify-content:center;
+    padding:40px;
+    animation: vo-toast-in .25s ease-out;
+  }
+  .vo-present__chrome{
+    width:100%; max-width:1200px;
+    display:grid; grid-template-rows: auto 1fr auto;
+    gap:18px;
+    color:#EDE6D4;
+  }
+  .vo-present__head{
+    display:grid; grid-template-columns: 1fr auto auto; gap:24px; align-items:center;
+  }
+  .vo-present__kicker{font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--terra-soft);}
+  .vo-present__title{font-family:var(--display); font-weight:500; font-size:34px; margin-top:4px; letter-spacing:-.01em;}
+  .vo-present__sub{font-family:var(--mono); font-size:12px; letter-spacing:.06em; color:rgba(237,230,212,.6); margin-top:2px;}
+  .vo-present__src{
+    display:flex; gap:4px; padding:4px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:99px;
+  }
+  .vo-present__src-opt{
+    padding:8px 16px; border:none; background:transparent; border-radius:99px;
+    font-family:var(--sans); font-size:13px; color:rgba(237,230,212,.7); cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .vo-present__src-opt:hover{color:#fff;}
+  .vo-present__src-opt--active{background:#fff; color:var(--ink);}
+  .vo-present__src-opt:disabled{opacity:.4; cursor:not-allowed;}
+  .vo-present__src-opt em{font-family:var(--mono); font-size:10px; font-style:normal; letter-spacing:.06em;}
+
+  .vo-present__stage{
+    position:relative;
+    aspect-ratio: 16/9;
+    border-radius:14px; overflow:hidden;
+    background: #0B0E13;
+    border: 1px solid rgba(255,255,255,.15);
+    box-shadow:
+      0 50px 80px -30px rgba(0,0,0,.55),
+      inset 0 0 0 1px rgba(255,255,255,.05);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .vo-present__cam{
+    width:100%; height:100%; object-fit:cover;
+    transform: scaleX(-1); /* mirror */
+  }
+  .vo-present__placeholder{
+    text-align:center; color:rgba(237,230,212,.7);
+    display:grid; gap:8px;
+  }
+  .vo-present__placeholder-icon{font-size:64px; opacity:.5;}
+  .vo-present__hint{font-family:var(--mono); font-size:12px; color:rgba(237,230,212,.45); letter-spacing:.06em;}
+
+  /* Mock slide */
+  .vo-present__slide{
+    width:100%; height:100%; padding:80px;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(194,90,58,.12), transparent 60%),
+      linear-gradient(180deg, #F4EFE2, #E8E2D0);
+    color:var(--ink);
+    display:grid; grid-template-rows: auto auto auto 1fr auto; gap:18px;
+  }
+  .vo-present__slide-kicker{font-family:var(--mono); font-size:14px; letter-spacing:.18em; text-transform:uppercase; color:var(--terra);}
+  .vo-present__slide-title{font-family:var(--display); font-weight:500; font-size:80px; line-height:.95; letter-spacing:-.02em;}
+  .vo-present__slide-sub{font-family:var(--mono); font-size:14px; letter-spacing:.1em; color:var(--mute);}
+  .vo-present__slide-bullets{display:grid; gap:14px; align-self:center; max-width:700px;}
+  .vo-present__slide-bullets > div{font-size:24px; padding-left:36px; position:relative; color:var(--ink-soft);}
+  .vo-present__slide-bullets > div::before{
+    content:""; position:absolute; left:0; top:.55em; width:20px; height:2px; background:var(--terra);
+  }
+  .vo-present__slide-foot{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--mute); padding-top:20px; border-top:1px solid var(--rule);
+  }
+
+  /* Mock screen-share */
+  .vo-present__sharemock{
+    width:100%; height:100%; background:#0F1318; display:grid; grid-template-rows: 40px 1fr;
+  }
+  .vo-present__sharemock-bar{
+    display:flex; align-items:center; gap:8px; padding:0 14px;
+    background:#1A2028; border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .vo-present__sharemock-bar > span{
+    width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.15);
+  }
+  .vo-present__sharemock-url{
+    margin-left:14px; font-family:var(--mono); font-size:12px; color:rgba(237,230,212,.5);
+    background:rgba(0,0,0,.3); padding:4px 12px; border-radius:99px;
+  }
+  .vo-present__sharemock-body{
+    padding:48px; display:grid; grid-template-columns: repeat(3, 1fr); gap:24px; align-content:start;
+  }
+  .vo-present__sharemock-card{
+    aspect-ratio: 4/3; background: rgba(237,230,212,.05); border:1px solid rgba(237,230,212,.1);
+    border-radius:8px; padding:24px; display:flex; align-items:flex-end;
+    font-family:var(--display); font-weight:500; font-size:24px; line-height:1.15; color:#EDE6D4;
+  }
+
+  .vo-present__foot{
+    display:flex; gap:10px; flex-wrap:wrap;
+  }
+  .vo-present__foot .vo-tag{background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.12); color:rgba(237,230,212,.7); font-family:var(--mono); font-size:11px; letter-spacing:.08em; padding:6px 12px;}
+  .vo-present__foot .vo-tag--accent{
+    background:rgba(225,75,54,.18); border-color:rgba(225,75,54,.45); color:#F4C8BD;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .vo-tag__live-dot{width:6px; height:6px; border-radius:50%; background:#E14B36; animation: vo-pulse-dot-fast 1s ease-in-out infinite;}
+
+  /* Hear-line: subtle dashed connector */
+  .vo-hearline{
+    position:absolute;
+    height:1.5px;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(194,90,58,.55) 0 6px,
+      transparent 6px 10px
+    );
+    transform-origin: 0 50%;
+    pointer-events:none;
+    z-index:3;
+  }
+
+  /* Hear toast */
+  .vo-hear{
+    position:absolute; right:36px; top:36px;
+    background:rgba(26,39,56,.92); color:#EDE6D4;
+    border-radius:12px; padding:14px 18px;
+    display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:center;
+    min-width:240px;
+    box-shadow: 0 20px 40px -20px rgba(26,39,56,.5);
+    animation: vo-toast-in .3s ease-out;
+  }
+  @keyframes vo-toast-in{from{opacity:0; transform:translateY(-6px);} to{opacity:1;}}
+  .vo-hear__icon{display:flex; gap:3px; align-items:flex-end; height:22px;}
+  .vo-hear__icon span{width:3px; border-radius:2px; background:var(--terra-soft); animation: vo-wave 1s ease-in-out infinite;}
+  .vo-hear__icon span:nth-child(1){height:18px;}
+  .vo-hear__icon span:nth-child(2){height:8px; animation-delay:.15s;}
+  .vo-hear__icon span:nth-child(3){height:14px; animation-delay:.3s;}
+  .vo-hear__lab{font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#9AA6B6; margin-bottom:2px;}
+  .vo-hear__names{font-size:14px; font-weight:500;}
+  .vo-hear__names em{font-family:var(--mono); font-size:11px; font-style:normal; color:var(--terra-soft);}
+
+  /* Hint */
+  .vo-hint{
+    position:absolute; left:48px; bottom:48px;
+    background:#fff; border:1px solid var(--rule); border-radius:14px;
+    padding:20px 24px; max-width:340px;
+    box-shadow: 0 30px 60px -30px rgba(26,39,56,.35);
+    animation: vo-toast-in .4s ease-out;
+  }
+  .vo-hint__kicker{font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--terra);}
+  .vo-hint__title{font-family:var(--display); font-weight:500; font-size:22px; margin:6px 0 8px; letter-spacing:-.01em;}
+  .vo-hint p{margin:0 0 14px; font-size:14px; color:var(--ink-soft); line-height:1.5;}
+  .vo-hint kbd{font-family:var(--mono); font-size:11px; padding:2px 6px; background:var(--cream-2); border:1px solid var(--rule); border-bottom-width:2px; border-radius:4px;}
+
+  /* Zoom controls — floating bottom-right of the floor viewport */
+  .vo-zoom{
+    position:absolute; right:24px; bottom:24px;
+    display:flex; flex-direction:column; align-items:stretch;
+    background:#fff; border:1px solid var(--rule); border-radius:10px;
+    overflow:hidden;
+    box-shadow: 0 10px 24px -12px rgba(26,39,56,.4), 0 2px 4px rgba(26,39,56,.08);
+    z-index:20;
+    font-family: var(--mono);
+  }
+  .vo-zoom__btn, .vo-zoom__pct{
+    background:#fff; border:none; cursor:pointer; padding:0;
+    color: var(--ink);
+    transition: background .15s, color .15s;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .vo-zoom__btn{
+    width:38px; height:38px;
+  }
+  .vo-zoom__btn:hover{ background: var(--cream-2); }
+  .vo-zoom__pct{
+    height:30px;
+    font-size:11px; letter-spacing:.08em;
+    color:var(--mute);
+    border-top:1px solid var(--rule-soft);
+    border-bottom:1px solid var(--rule-soft);
+  }
+  .vo-zoom__pct:hover{ color: var(--ink); background: var(--cream-2); }
+
+  /* Generic Toast */
+  .vo-toast{
+    position:absolute; left:50%; bottom:48px; transform:translateX(-50%);
+    background:#1A2738; color:#EDE6D4; padding:12px 20px; border-radius:99px; font-size:14px;
+    box-shadow: 0 20px 40px -20px rgba(26,39,56,.5);
+    animation: vo-toast-in .25s ease-out;
+  }
+  .vo-toast--ok{background:#2A4D34;}
+  .vo-toast--warn{background:#7A3A1A;}
+
+  /* Meeting panel */
+  .vo-meeting-panel{
+    margin:0 24px 24px;
+    background:#1A2738; color:#EDE6D4; border-radius:14px;
+    padding:20px 24px;
+    display:grid; gap:14px;
+    box-shadow: 0 20px 40px -20px rgba(26,39,56,.5);
+  }
+  .vo-meeting-panel__head{display:flex; justify-content:space-between; align-items:flex-start; gap:18px;}
+  .vo-meeting-panel__kicker{font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--terra-soft);}
+  .vo-meeting-panel__title{font-family:var(--display); font-size:22px; font-weight:500; margin-top:4px;}
+  .vo-meeting-panel__sub{font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:#9AA6B6; margin-top:2px;}
+  .vo-meeting-panel__participants{display:flex; gap:18px; flex-wrap:wrap;}
+  .vo-meeting-panel__p{display:flex; align-items:center; gap:10px; padding:8px 14px 8px 8px; background:rgba(255,255,255,.05); border-radius:99px;}
+  .vo-meeting-panel__pavatar{width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px; font-weight:600; box-shadow: inset 0 0 0 2px rgba(255,255,255,.4);}
+  .vo-meeting-panel__pname{font-size:13px; font-weight:500;}
+  .vo-meeting-panel__pwave{display:flex; gap:2px; align-items:flex-end; height:10px; margin-top:4px;}
+  .vo-meeting-panel__pwave span{width:2px; background:var(--terra-soft); border-radius:1px; height:4px; animation: vo-wave 1.2s ease-in-out infinite;}
+  .vo-meeting-panel__pwave span:nth-child(2){animation-delay: .15s;}
+  .vo-meeting-panel__pwave span:nth-child(3){animation-delay: .3s;}
+  .vo-meeting-panel__pwave span:nth-child(4){animation-delay: .45s;}
+  .vo-meeting-panel__foot{display:flex; gap:8px; font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:#9AA6B6;}
+  .vo-tag{padding:4px 10px; border-radius:99px; background:rgba(255,255,255,.05); border:1px solid #33445C;}
+  .vo-tag--accent{background:rgba(194,90,58,.18); border-color:rgba(194,90,58,.35); color:var(--terra-soft);}
+
+  /* Buttons */
+  .vo-btn{
+    font-family:var(--sans); font-size:13px; padding:10px 18px; border-radius:99px;
+    border:1px solid transparent; cursor:pointer; transition: background .15s, border-color .15s;
+  }
+  .vo-btn--primary{background:var(--terra); color:#fff;}
+  .vo-btn--primary:hover{background:#A94428;}
+  .vo-btn--primary:disabled{background:var(--cream-3); color:var(--mute); cursor:not-allowed;}
+  .vo-btn--ghost{background:transparent; color:inherit; border-color:currentColor; opacity:.7;}
+  .vo-btn--ghost:hover{opacity:1;}
+  .vo-btn--sm{padding:6px 14px; font-size:12px;}
+
+  /* Avatar focus card */
+  .vo-focus{
+    background:#fff; border-radius:18px;
+    width:440px; max-width:92vw;
+    overflow:hidden; position:relative;
+    box-shadow: 0 40px 80px -20px rgba(26,39,56,.45);
+    animation: vo-toast-in .2s ease-out;
+  }
+  .vo-focus__x{
+    position:absolute; right:14px; top:14px; z-index:5;
+    width:30px; height:30px; border:none; border-radius:50%;
+    background:rgba(0,0,0,.35); color:#fff; font-size:20px;
+    line-height:1; cursor:pointer; backdrop-filter: blur(4px);
+  }
+  .vo-focus__x:hover{background:rgba(0,0,0,.55);}
+  .vo-focus__viewport{
+    position:relative; aspect-ratio: 1/1;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  .vo-focus__cam{
+    width:100%; height:100%; object-fit:cover;
+    transform: scaleX(-1);
+  }
+  .vo-focus__initials{
+    font-family:var(--display); font-weight:500;
+    font-size:160px; color:#fff; letter-spacing:-.04em;
+    text-shadow: 0 4px 24px rgba(0,0,0,.2);
+  }
+  .vo-focus__statbadge{
+    position:absolute; left:18px; bottom:18px;
+    background:rgba(0,0,0,.5); color:#fff;
+    padding:6px 14px; border-radius:99px;
+    font-size:13px; font-weight:500;
+    display:inline-flex; align-items:center; gap:8px;
+    backdrop-filter: blur(6px);
+  }
+  .vo-focus__statdot{width:8px; height:8px; border-radius:50%;}
+  .vo-focus__vol{
+    position:absolute; right:18px; bottom:18px;
+    background:var(--terra); color:#fff;
+    padding:6px 14px; border-radius:99px;
+    font-family:var(--mono); font-size:12px; letter-spacing:.06em;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .vo-focus__vol span{width:3px; background:#fff; border-radius:2px; animation: vo-wave 1s ease-in-out infinite;}
+  .vo-focus__vol span:nth-child(1){height:14px;}
+  .vo-focus__vol span:nth-child(2){height:8px; animation-delay:.15s;}
+  .vo-focus__vol span:nth-child(3){height:12px; animation-delay:.3s;}
+  .vo-focus__vol em{font-style:normal; margin-left:4px;}
+  .vo-focus__body{padding:24px 28px 28px;}
+  .vo-focus__kicker{font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--terra);}
+  .vo-focus__name{font-family:var(--display); font-weight:500; font-size:32px; margin:4px 0 2px; letter-spacing:-.01em;}
+  .vo-focus__where{font-size:14px; color:var(--mute);}
+  .vo-focus__meta{margin-top:20px; display:grid; gap:1px; background:var(--rule-soft); border:1px solid var(--rule-soft); border-radius:10px; overflow:hidden;}
+  .vo-focus__meta-row{display:grid; grid-template-columns: 110px 1fr; gap:12px; padding:10px 14px; background:#fff; font-size:13px;}
+  .vo-focus__meta-lab{font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--mute); align-self:center;}
+  .vo-focus__actions{display:flex; gap:8px; margin-top:18px; flex-wrap:wrap;}
+  .vo-focus__actions .vo-btn{font-size:13px; padding:10px 16px;}
+  .vo-focus__actions .vo-btn--primary{flex:1; min-width: 140px;}
+  .vo-focus__actions .vo-btn--ghost{border-color:var(--rule); color:var(--ink-soft);}
+  .vo-focus__actions .vo-btn--ghost:hover{background:var(--cream-2); border-color:var(--ink-soft); opacity:1;}
+  .vo-modal-bg{
+    position:fixed; inset:0; background:rgba(26,39,56,.4); backdrop-filter: blur(4px);
+    display:flex; align-items:center; justify-content:center; z-index:100;
+    animation: vo-toast-in .2s ease-out;
+  }
+  .vo-modal{
+    background:#fff; border-radius:18px; padding:32px;
+    width: 440px; max-width:90vw;
+    box-shadow: 0 40px 80px -20px rgba(26,39,56,.45);
+  }
+  .vo-modal__kicker{font-family:var(--mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--terra);}
+  .vo-modal__title{font-family:var(--display); font-size:32px; font-weight:500; margin:6px 0 4px; letter-spacing:-.01em;}
+  .vo-modal__sub{font-size:13px; color:var(--mute); margin-bottom:24px;}
+  .vo-field{display:block; margin-bottom:20px;}
+  .vo-field span{display:block; font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); margin-bottom:8px;}
+  .vo-field input{
+    width:100%; padding:12px 14px; border:1px solid var(--rule); border-radius:8px;
+    font-family:var(--sans); font-size:15px; color:var(--ink); background:var(--paper);
+  }
+  .vo-field input:focus{outline:none; border-color:var(--terra);}
+  .vo-segment{display:flex; gap:6px; padding:4px; background:var(--paper); border:1px solid var(--rule); border-radius:10px;}
+  .vo-segment__opt{
+    flex:1; padding:8px; border:none; background:transparent; border-radius:6px;
+    font-family:var(--sans); font-size:13px; color:var(--ink-soft); cursor:pointer;
+  }
+  .vo-segment__opt--active{background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.08);}
+  .vo-modal__actions{display:flex; justify-content:flex-end; gap:10px; margin-top:16px;}
+  .vo-modal .vo-btn--ghost{color:var(--ink-soft); border-color:var(--rule);}
+
+  /* Scrollbar */
+  .vo-sidebar::-webkit-scrollbar{width:6px;}
+  .vo-sidebar::-webkit-scrollbar-thumb{background:var(--rule); border-radius:3px;}
+
+</style>
+</head>
+
+<body>
+
+<div id="root"></div>
+
+<script src="prototype/data.js"></script>
+<script src="prototype/layouts.js"></script>
+<script type="text/babel" src="prototype/floor.jsx"></script>
+<script type="text/babel" src="prototype/ui.jsx"></script>
+<script type="text/babel" src="prototype/app.jsx"></script>
+
+</body>
+</html>

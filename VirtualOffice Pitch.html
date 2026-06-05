@@ -1,0 +1,1138 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<title>VirtualOffice — pitch deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="deck-stage.js"></script>
+<style>
+  :root{
+    --cream: #F1ECDF;
+    --cream-2: #E8E2D2;
+    --navy: #1A2738;
+    --navy-2: #243348;
+    --ink: #1B1D1F;
+    --ink-soft: #3D3F42;
+    --mute: #8B8578;
+    --rule: #CFC7B3;
+    --rule-dark: #2D3C52;
+    --terra: #C25A3A;
+    --terra-soft: #E3B19E;
+    --sage: #5B7A5B;
+    --amber: #D5A04A;
+
+    --display: 'Bricolage Grotesque', 'Times New Roman', serif;
+    --sans: 'Geist', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  html,body{margin:0;padding:0;background:#111;color:var(--ink);font-family:var(--sans);}
+  deck-stage section{
+    background:var(--cream);
+    color:var(--ink);
+    padding:80px 96px;
+    box-sizing:border-box;
+    position:relative;
+    overflow:hidden;
+  }
+  deck-stage section.dark{background:var(--navy); color:#EDE6D4;}
+  deck-stage section.dark .rule{background:var(--rule-dark);}
+  deck-stage section.dark .mute{color:#9AA6B6;}
+  deck-stage section.dark .kicker{color:var(--terra-soft);}
+
+  /* Common */
+  .kicker{
+    font-family:var(--mono); font-size:20px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--terra); display:flex; align-items:center; gap:14px;
+  }
+  .kicker::before{content:""; width:36px; height:1px; background:currentColor; display:inline-block;}
+  .kicker.nolead::before{display:none;}
+  .display{font-family:var(--display); font-weight:500; letter-spacing:-.02em; line-height:.96; color:inherit;}
+  .h-xl{font-size:148px;}
+  .h-lg{font-size:108px;}
+  .h-md{font-size:72px;}
+  .h-sm{font-size:48px;}
+  .body{font-family:var(--sans); font-size:24px; line-height:1.45; color:var(--ink-soft); max-width:720px; text-wrap:pretty;}
+  section.dark .body{color:#C9D0DC;}
+  .mute{color:var(--mute); font-size:18px;}
+  .rule{height:1px; background:var(--rule); width:100%;}
+  .pill{font-family:var(--mono); font-size:16px; letter-spacing:.08em; text-transform:uppercase; padding:10px 18px; border:1px solid var(--rule); border-radius:999px; display:inline-flex; gap:10px; align-items:center; color:var(--ink-soft); background:rgba(255,255,255,.4);}
+  section.dark .pill{border-color:#33445C; color:#C9D0DC; background:rgba(255,255,255,.04);}
+  .dot{width:8px;height:8px;border-radius:50%; background:var(--terra);}
+
+  /* Slide chrome */
+  .topbar{
+    position:absolute; top:48px; left:96px; right:96px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:var(--mono); font-size:18px; letter-spacing:.18em; text-transform:uppercase; color:var(--mute);
+  }
+  .topbar .brand{display:flex; align-items:center; gap:12px; color:var(--ink);}
+  section.dark .topbar .brand{color:#EDE6D4;}
+  .logo-mark{
+    width:22px; height:22px; border-radius:6px; background:var(--terra); position:relative;
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,.06);
+  }
+  .logo-mark::after{content:""; position:absolute; inset:5px; border:2px solid var(--cream); border-radius:3px;}
+  section.dark .logo-mark::after{border-color:var(--navy);}
+
+  /* SLIDE 1 — TITLE */
+  .s-title{display:grid; grid-template-rows: 1fr auto; padding-top:160px;}
+  .s-title .stage{position:relative; display:grid; grid-template-columns: 1.15fr .85fr; gap:64px; align-items:end;}
+  .s-title h1{font-size:160px; line-height:.92; letter-spacing:-.035em; margin:0;}
+  .s-title h1 em{font-style:normal; color:var(--terra);}
+  .s-title .underline-mark{
+    display:inline-block; width:200px; height:12px; background:var(--terra); margin-left:6px; vertical-align:middle;
+    transform:translateY(-10px);
+  }
+  .s-title .meta{display:flex; justify-content:space-between; align-items:flex-end; padding-top:48px; border-top:1px solid var(--rule); margin-top:64px;}
+  .s-title .meta .col{font-family:var(--mono); font-size:16px; letter-spacing:.12em; text-transform:uppercase; color:var(--mute);}
+  .s-title .meta .col strong{display:block; font-family:var(--sans); font-size:22px; color:var(--ink); text-transform:none; letter-spacing:0; margin-top:8px; font-weight:500;}
+
+  /* tiny floor preview on title */
+  .mini-floor{
+    width:100%; aspect-ratio:4/3; border-radius:14px; background:#E8E2D2;
+    border:1px solid var(--rule); position:relative; overflow:hidden;
+    align-self:end;
+    box-shadow: 0 30px 60px -30px rgba(26,39,56,.3);
+  }
+
+  /* SLIDE 2 — PROBLEM */
+  .stat-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:48px; margin-top:80px;}
+  .stat .num{font-family:var(--display); font-size:128px; line-height:1; letter-spacing:-.04em;}
+  .stat .lbl{font-family:var(--sans); font-size:18px; color:var(--ink-soft); margin-top:18px; line-height:1.4; max-width:280px;}
+  section.dark .stat .lbl{color:#C9D0DC;}
+  .stat .num em{font-style:normal; color:var(--terra);}
+
+  /* SLIDE 3 — INSIGHT (quote) */
+  .quote{font-family:var(--display); font-weight:400; font-size:96px; line-height:1.05; letter-spacing:-.02em; max-width:1480px;}
+  .quote em{font-style:italic; color:var(--terra-soft);}
+  .quote-cite{font-family:var(--mono); font-size:16px; letter-spacing:.18em; text-transform:uppercase; margin-top:48px; color:#9AA6B6;}
+
+  /* SLIDE 4 — PRODUCT HERO */
+  .hero{display:grid; grid-template-columns: 1fr 1.15fr; gap:80px; align-items:center; height:100%;}
+  .hero h2{font-size:110px;}
+  .hero .body{font-size:26px;}
+  .hero .tags{display:flex; gap:10px; margin-top:36px; flex-wrap:wrap;}
+
+  /* FLOOR MOCK — top-down 2D office */
+  .floor{
+    width:100%; aspect-ratio: 16/10;
+    background:#EEE6CF;
+    border-radius:18px;
+    border:1px solid var(--rule);
+    box-shadow: 0 30px 60px -30px rgba(26,39,56,.35), 0 1px 0 rgba(255,255,255,.6) inset;
+    position:relative;
+    overflow:hidden;
+    font-family:var(--mono);
+    color:#7A6E55;
+    font-size:16px;
+  }
+  .floor .grid-bg{
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(122,110,85,.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(122,110,85,.08) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .floor .room{position:absolute; border-radius:8px; border:1.5px solid rgba(26,39,56,.35); background:rgba(255,255,255,.5); display:flex; flex-direction:column; padding:10px 12px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#2A3B52;}
+  .floor .room.meeting{background:rgba(74,144,217,.18); border-color:rgba(30,60,100,.45);}
+  .floor .room.focus{background:rgba(213,160,74,.22); border-color:rgba(180,120,30,.55);}
+  .floor .room.social{background:rgba(91,122,91,.22); border-color:rgba(60,90,60,.55);}
+  .floor .room .name{font-weight:600;}
+  .floor .room .meta-row{display:flex; justify-content:space-between; margin-top:auto; opacity:.7; font-size:10px;}
+  .floor .desk{position:absolute; width:36px; height:24px; border-radius:5px; background:#D8C9A2; border:1px solid rgba(122,110,85,.4);}
+  .floor .desk::after{content:""; position:absolute; left:8px; right:8px; bottom:-7px; height:6px; background:rgba(122,110,85,.25); border-radius:3px;}
+  .floor .avatar{
+    position:absolute; width:26px; height:26px; border-radius:50%;
+    background:var(--terra); color:#fff; display:flex; align-items:center; justify-content:center;
+    font-family:var(--sans); font-weight:600; font-size:11px; letter-spacing:0;
+    box-shadow:0 2px 6px rgba(26,39,56,.25), inset 0 0 0 2px rgba(255,255,255,.6);
+    z-index:2;
+  }
+  .floor .avatar.a-sage{background:var(--sage);}
+  .floor .avatar.a-navy{background:#3E5A87;}
+  .floor .avatar.a-amber{background:var(--amber);}
+  .floor .avatar.a-plum{background:#7A4A6A;}
+  .floor .avatar .ring{
+    position:absolute; inset:-22px; border-radius:50%; border:1.5px dashed rgba(194,90,58,.5);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{transform:scale(.9); opacity:.6;}50%{transform:scale(1.05); opacity:1;}}
+  .floor .label{position:absolute; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#2A3B52; opacity:.55;}
+  .floor .plant{position:absolute; width:18px; height:18px; border-radius:50%; background:#7E9A6E; box-shadow: inset 0 0 0 2px rgba(0,0,0,.05);}
+  .floor .corner-stamp{position:absolute; left:24px; bottom:20px; font-size:11px; letter-spacing:.18em; opacity:.65;}
+  .floor .corner-stamp-r{position:absolute; right:24px; bottom:20px; font-size:11px; letter-spacing:.18em; opacity:.65;}
+
+  /* SLIDE 5 — SPATIAL AUDIO DIAGRAM */
+  .audio-explain{display:grid; grid-template-columns: .9fr 1.1fr; gap:80px; align-items:center; height:100%;}
+  .audio-diagram{
+    aspect-ratio:1; width:100%; max-width:760px; margin:auto;
+    position:relative; display:flex; align-items:center; justify-content:center;
+  }
+  .audio-diagram .ring{position:absolute; inset:50% 50%; transform:translate(-50%,-50%); border-radius:50%; border:1.5px dashed var(--rule-dark);}
+  .audio-diagram .ring.r1{width:30%; height:30%; border-color:var(--terra);}
+  .audio-diagram .ring.r2{width:55%; height:55%; border-color:var(--amber); border-style:dashed;}
+  .audio-diagram .ring.r3{width:80%; height:80%; border-color:var(--sage); border-style:dashed;}
+  .audio-diagram .ring.r4{width:100%; height:100%; border-color:#3D4A60; opacity:.4;}
+  .audio-diagram .ring-label{position:absolute; font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6B6; padding:6px 10px; background:var(--navy); border-radius:99px; border:1px solid #33445C;}
+  .audio-diagram .center{
+    width:64px; height:64px; border-radius:50%; background:var(--terra);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-family:var(--sans); font-weight:600; font-size:20px;
+    box-shadow: 0 0 0 4px rgba(194,90,58,.25);
+  }
+  .audio-diagram .peer{position:absolute; width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-family:var(--sans); font-weight:600; font-size:14px;}
+  .audio-diagram .peer .vol{position:absolute; left:50%; bottom:-22px; transform:translateX(-50%); font-family:var(--mono); font-size:11px; letter-spacing:.1em; padding:2px 6px; background:#1A2738; border:1px solid #33445C; color:#9AA6B6; border-radius:4px;}
+
+  .audio-legend{display:grid; gap:18px; margin-top:32px;}
+  .audio-legend .row{display:grid; grid-template-columns: 24px 1fr; gap:18px; align-items:start;}
+  .audio-legend .swatch{width:14px; height:14px; border-radius:50%; margin-top:8px; border:1.5px dashed currentColor;}
+  .audio-legend .row .t{font-family:var(--sans); font-size:20px;}
+  .audio-legend .row .t small{display:block; font-family:var(--mono); font-size:13px; color:#9AA6B6; margin-top:4px; letter-spacing:.08em;}
+
+  /* SLIDE 6 — FULL FLOOR DEMO */
+  .demo-shell{display:grid; grid-template-rows: auto 1fr auto; gap:24px; height:100%;}
+  .demo-head{display:flex; justify-content:space-between; align-items:flex-end;}
+  .demo-head h2{font-size:68px;}
+  .demo-footer{display:flex; justify-content:space-between; align-items:center; font-family:var(--mono); font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--mute);}
+  .demo-footer .chips{display:flex; gap:10px;}
+  .chip{padding:6px 12px; border:1px solid var(--rule); border-radius:99px; display:inline-flex; align-items:center; gap:8px;}
+  .chip .sw{width:8px; height:8px; border-radius:2px;}
+
+  /* SLIDE 7 — BOOKING UI */
+  .booking{display:grid; grid-template-columns:1fr 1.05fr; gap:80px; align-items:center; height:100%;}
+  .calendar{
+    background:#fff; border:1px solid var(--rule); border-radius:14px; padding:28px;
+    font-family:var(--sans); color:var(--ink);
+    box-shadow: 0 30px 60px -30px rgba(26,39,56,.25);
+  }
+  .calendar .ch{display:flex; justify-content:space-between; align-items:center; padding-bottom:18px; border-bottom:1px solid var(--rule);}
+  .calendar .ch .room-title{display:flex; align-items:center; gap:14px; font-weight:600; font-size:22px;}
+  .calendar .ch .room-title .sw{width:14px; height:14px; border-radius:4px; background:var(--terra);}
+  .calendar .ch .meta{font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--mute);}
+  .calendar .grid{display:grid; grid-template-columns:80px 1fr; margin-top:18px;}
+  .calendar .row{display:contents;}
+  .calendar .time{font-family:var(--mono); font-size:13px; color:var(--mute); padding:14px 0; border-top:1px dashed var(--rule);}
+  .calendar .slot{padding:14px 0; border-top:1px dashed var(--rule); position:relative;}
+  .calendar .ev{position:absolute; left:0; right:14px; top:8px; height:46px; border-radius:6px; padding:8px 12px; display:flex; flex-direction:column; justify-content:center; font-size:14px;}
+  .calendar .ev.now{background:rgba(194,90,58,.18); border:1px solid rgba(194,90,58,.45); color:var(--terra);}
+  .calendar .ev.next{background:rgba(91,122,91,.18); border:1px solid rgba(91,122,91,.45); color:var(--sage);}
+  .calendar .ev.outlook{background:rgba(74,144,217,.18); border:1px solid rgba(74,144,217,.45); color:#2E5C92;}
+  .calendar .ev .who{font-family:var(--mono); font-size:11px; letter-spacing:.06em; opacity:.85; margin-top:2px; text-transform:uppercase;}
+  .calendar .ev.tall{height:90px;}
+
+  /* SLIDE 8 — MIT BORD */
+  .desk-view{display:grid; grid-template-columns: 1fr 1.1fr; gap:80px; align-items:center; height:100%;}
+  .desk-mock{
+    aspect-ratio: 1/1; background:#EEE6CF; border-radius:18px; border:1px solid var(--rule);
+    position:relative; padding:48px;
+    box-shadow: 0 30px 60px -30px rgba(26,39,56,.3);
+  }
+  .desk-mock .surface{
+    position:absolute; left:48px; right:48px; top:60%; height:34%; border-radius:10px;
+    background:linear-gradient(180deg, #D8C9A2, #C8B788);
+    box-shadow: inset 0 -10px 30px rgba(0,0,0,.08);
+  }
+  .desk-mock .frame{position:absolute; left:48px; right:48px; top:60%; height:34%; border-radius:10px; border:1.5px solid rgba(122,110,85,.5);}
+  .desk-mock .photo{position:absolute; left:96px; top:62%; width:90px; height:64px; background:#3E5A87; border:6px solid #fff; border-radius:4px; transform:rotate(-4deg); box-shadow:0 8px 16px rgba(0,0,0,.15);}
+  .desk-mock .photo::after{content:"familie"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,.7); font-family:var(--mono); font-size:11px; letter-spacing:.1em;}
+  .desk-mock .lamp{position:absolute; right:130px; top:48%; width:30px; height:90px; }
+  .desk-mock .lamp::before{content:""; position:absolute; left:11px; top:0; width:8px; height:60px; background:#3D3F42; border-radius:3px;}
+  .desk-mock .lamp::after{content:""; position:absolute; left:-2px; top:0; width:34px; height:18px; border-radius:50% 50% 4px 4px / 80% 80% 4px 4px; background:var(--terra); box-shadow: 0 0 30px rgba(194,90,58,.4);}
+  .desk-mock .plant{position:absolute; right:80px; top:54%; width:36px; height:36px; border-radius:50%; background:#7E9A6E;}
+  .desk-mock .plant::after{content:""; position:absolute; left:9px; bottom:-12px; width:18px; height:14px; background:#A07458; border-radius:0 0 3px 3px;}
+  .desk-mock .name-tag{
+    position:absolute; left:48px; top:48px;
+    font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:#7A6E55;
+  }
+  .desk-mock .busy{
+    position:absolute; right:48px; top:48px; padding:8px 14px; border-radius:99px;
+    background:rgba(91,122,91,.18); color:var(--sage); font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+    display:inline-flex; gap:8px; align-items:center;
+  }
+  .desk-mock .busy .dot{width:8px; height:8px; border-radius:50%; background:var(--sage);}
+  .desk-mock .trophy{position:absolute; right:96px; top:64%; width:36px; height:36px; border-radius:6px; background:var(--amber); display:flex; align-items:center; justify-content:center; color:#fff; font-family:var(--display); font-weight:700; font-size:20px; box-shadow:0 6px 16px rgba(213,160,74,.4);}
+
+  /* SLIDE 9 — MS 365 */
+  .ms-grid{display:grid; grid-template-columns: 1fr 1fr; gap:48px; margin-top:48px;}
+  .ms-card{background:#fff; border:1px solid var(--rule); border-radius:16px; padding:36px 36px 32px; box-shadow:0 20px 40px -30px rgba(26,39,56,.25);}
+  .ms-card .icon{width:48px; height:48px; border-radius:10px; background:#1A2738; display:flex; align-items:center; justify-content:center; margin-bottom:24px;
+    color:#fff; font-family:var(--mono); font-size:18px; letter-spacing:.04em;}
+  .ms-card .icon.calendar{background:#2E5C92;}
+  .ms-card h4{font-family:var(--display); font-weight:500; font-size:34px; margin:0 0 10px;}
+  .ms-card p{margin:0; color:var(--ink-soft); font-size:18px; line-height:1.5;}
+  .ms-card ul{list-style:none; padding:0; margin:18px 0 0; display:grid; gap:8px;}
+  .ms-card li{font-family:var(--mono); font-size:13px; letter-spacing:.06em; color:var(--ink-soft); padding-left:18px; position:relative;}
+  .ms-card li::before{content:"→"; position:absolute; left:0; color:var(--terra);}
+
+  /* SLIDE 10 — ARCH/SECURITY */
+  .arch-cols{display:grid; grid-template-columns: repeat(4,1fr); gap:24px; margin-top:48px;}
+  .arch-col{background:rgba(255,255,255,.04); border:1px solid #33445C; border-radius:14px; padding:28px; min-height:280px; display:grid; grid-template-rows: auto auto 1fr;}
+  .arch-col .lab{font-family:var(--mono); font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--terra-soft);}
+  .arch-col .ttl{font-family:var(--display); font-weight:500; font-size:28px; margin:14px 0 16px;}
+  .arch-col ul{list-style:none; padding:0; margin:0; display:grid; gap:10px; align-self:start;}
+  .arch-col li{font-size:15px; color:#C9D0DC; line-height:1.5; padding-left:14px; position:relative;}
+  .arch-col li::before{content:"–"; position:absolute; left:0; color:var(--terra-soft);}
+  .sec-row{display:flex; gap:18px; margin-top:36px; flex-wrap:wrap;}
+
+  /* SLIDE 11 — PILOT */
+  .pilot{display:grid; grid-template-rows: auto 1fr auto; height:100%; gap:32px;}
+  .pilot-weeks{display:grid; grid-template-columns: repeat(6, 1fr); gap:18px;}
+  .week{background:#fff; border:1px solid var(--rule); border-radius:14px; padding:24px; display:grid; grid-template-rows:auto auto 1fr auto; gap:14px; min-height:300px;}
+  .week .num{font-family:var(--display); font-weight:500; font-size:60px; line-height:1; color:var(--terra);}
+  .week .lab{font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--mute);}
+  .week h4{font-family:var(--display); font-weight:500; font-size:22px; margin:0; line-height:1.15;}
+  .week p{margin:0; font-size:14px; color:var(--ink-soft); line-height:1.5;}
+  .week.hi{background:#1A2738; color:#EDE6D4; border-color:transparent;}
+  .week.hi .lab{color:#9AA6B6;}
+  .week.hi p{color:#C9D0DC;}
+  .week.hi .num{color:var(--amber);}
+
+  .kpi-strip{display:grid; grid-template-columns: repeat(3,1fr); gap:32px; padding-top:24px; border-top:1px solid var(--rule);}
+  .kpi .v{font-family:var(--display); font-weight:500; font-size:56px; line-height:1; letter-spacing:-.02em;}
+  .kpi .l{font-family:var(--mono); font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); margin-top:10px;}
+  .kpi .d{font-size:16px; color:var(--ink-soft); margin-top:8px; max-width:280px;}
+
+  /* SLIDE 12 — PRICING */
+  .price-grid{display:grid; grid-template-columns: repeat(3,1fr); gap:24px; margin-top:48px;}
+  .plan{background:#fff; border:1px solid var(--rule); border-radius:18px; padding:36px; display:grid; grid-template-rows: auto auto auto 1fr auto; gap:18px; min-height:560px;}
+  .plan.hi{background:#1A2738; color:#EDE6D4; border-color:transparent; transform:scale(1.03); box-shadow: 0 40px 80px -40px rgba(26,39,56,.5);}
+  .plan .name{font-family:var(--display); font-weight:500; font-size:38px; letter-spacing:-.01em;}
+  .plan .price{display:flex; align-items:baseline; gap:8px; font-family:var(--display); font-weight:500;}
+  .plan .price .amt{font-size:72px; line-height:1; letter-spacing:-.03em;}
+  .plan .price .per{font-family:var(--mono); font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--mute);}
+  .plan.hi .per{color:#9AA6B6;}
+  .plan .desc{font-size:16px; color:var(--ink-soft); line-height:1.5;}
+  .plan.hi .desc{color:#C9D0DC;}
+  .plan ul{list-style:none; padding:0; margin:0; display:grid; gap:10px;}
+  .plan li{font-size:15px; color:var(--ink); padding-left:22px; position:relative; line-height:1.45;}
+  .plan li::before{content:""; position:absolute; left:2px; top:7px; width:8px; height:8px; border-radius:2px; background:var(--terra);}
+  .plan.hi li{color:#EDE6D4;}
+  .plan.hi li::before{background:var(--amber);}
+  .plan .badge{font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; padding:5px 10px; border-radius:99px; background:var(--terra); color:#fff; display:inline-block; align-self:flex-start;}
+  .plan .cta{font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; padding:14px 18px; border:1px solid var(--ink); border-radius:99px; text-align:center; align-self:end;}
+  .plan.hi .cta{border-color:#EDE6D4; background:#EDE6D4; color:#1A2738;}
+
+  /* SLIDE 13 — ROADMAP */
+  .road{display:grid; grid-template-columns: repeat(4, 1fr); gap:18px; margin-top:64px; align-items:start;}
+  .phase{position:relative; padding-top:32px;}
+  .phase::before{content:""; position:absolute; left:0; right:0; top:8px; height:2px; background:var(--rule);}
+  .phase.now::before{background:var(--terra);}
+  .phase .marker{position:absolute; top:0; left:0; width:18px; height:18px; border-radius:50%; background:#fff; border:2px solid var(--rule);}
+  .phase.now .marker{background:var(--terra); border-color:var(--terra); box-shadow:0 0 0 6px rgba(194,90,58,.15);}
+  .phase .when{font-family:var(--mono); font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); margin-bottom:8px;}
+  .phase .label{font-family:var(--display); font-weight:500; font-size:34px; letter-spacing:-.01em; margin-bottom:6px;}
+  .phase .est{font-family:var(--mono); font-size:12px; letter-spacing:.1em; color:var(--terra); margin-bottom:18px;}
+  .phase ul{list-style:none; padding:0; margin:0; display:grid; gap:8px;}
+  .phase li{font-size:16px; color:var(--ink-soft); line-height:1.45;}
+
+  /* SLIDE 14 — CTA */
+  .cta-slide{display:grid; grid-template-columns:1.1fr .9fr; gap:80px; align-items:center; height:100%;}
+  .cta-slide h2{font-size:128px;}
+  .next-card{background:rgba(255,255,255,.04); border:1px solid #33445C; border-radius:16px; padding:40px;}
+  .next-card .step{display:grid; grid-template-columns: 32px 1fr; gap:18px; padding:20px 0; border-top:1px solid #33445C;}
+  .next-card .step:first-of-type{border-top:none; padding-top:0;}
+  .next-card .step .n{font-family:var(--mono); font-size:14px; color:var(--terra-soft);}
+  .next-card .step h5{font-family:var(--display); font-weight:500; font-size:22px; margin:0 0 4px;}
+  .next-card .step p{margin:0; color:#C9D0DC; font-size:15px; line-height:1.5;}
+
+</style>
+</head>
+<body>
+
+<deck-stage thumbnails>
+
+<!-- =========================== 01 — TITLE =========================== -->
+<section data-screen-label="01 Title" class="s-title">
+  <div class="topbar">
+    <div class="brand"><span class="logo-mark"></span> VirtualOffice</div>
+    <div>Pitch / 2026</div>
+  </div>
+
+  <div class="stage">
+    <div>
+      <div class="kicker">Et virtuelt kontor · Pitch til 2care4</div>
+      <h1 class="display" style="margin-top:36px;">
+        Genskab<br>
+        kontor&shy;energien<em>.</em><span class="underline-mark"></span>
+      </h1>
+    </div>
+
+    <div class="floor mini-floor" aria-hidden="true">
+      <div class="grid-bg" style="background-size:28px 28px;"></div>
+      <div class="room meeting" style="left:6%; top:8%; width:42%; height:36%;">
+        <div class="name" style="font-size:13px;">Mødelokale</div>
+        <div class="meta-row" style="font-size:11px;"><span>8 pl.</span><span>14:00</span></div>
+      </div>
+      <div class="room social" style="right:6%; top:8%; width:34%; height:28%;">
+        <div class="name" style="font-size:13px;">Kaffe</div>
+        <div class="meta-row" style="font-size:11px;"><span>åben</span></div>
+      </div>
+      <div class="desk" style="left:18%; top:60%;"></div>
+      <div class="desk" style="left:30%; top:60%;"></div>
+      <div class="desk" style="left:18%; top:78%;"></div>
+      <div class="desk" style="left:30%; top:78%;"></div>
+      <div class="desk" style="left:55%; top:60%;"></div>
+      <div class="desk" style="left:67%; top:60%;"></div>
+      <div class="avatar" style="left:21%; top:62%;">RK<div class="ring"></div></div>
+      <div class="avatar a-sage" style="left:33%; top:80%;">MN</div>
+      <div class="avatar a-navy" style="left:58%; top:62%;">SP</div>
+      <div class="avatar a-amber" style="right:14%; top:50%;">JL</div>
+      <div class="plant" style="right:6%; bottom:8%;"></div>
+      <div class="plant" style="left:6%; bottom:8%;"></div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <div class="col">FORFATTER<strong>Teknisk arkitektur · v1.0</strong></div>
+    <div class="col">DATO<strong>Maj 2026</strong></div>
+    <div class="col">STATUS<strong>Pilot-pitch · 2care4</strong></div>
+    <div class="col" style="text-align:right;">CONFIDENTIAL<strong>VirtualOffice ApS</strong></div>
+  </div>
+</section>
+
+<!-- =========================== 02 — PROBLEM =========================== -->
+<section data-screen-label="02 Problem" class="dark">
+  <div class="topbar">
+    <div class="brand"><span class="logo-mark"></span> VirtualOffice</div>
+    <div>02 · Problem</div>
+  </div>
+
+  <div style="padding-top:120px;">
+    <div class="kicker">Det handler ikke om møder</div>
+    <h2 class="display h-md" style="margin-top:28px; max-width:1500px;">
+      Remote har vundet — men det fjernede det,<br>
+      der gjorde et kontor til <em style="font-style:normal; color:var(--terra-soft);">et kontor</em>.
+    </h2>
+    <p class="body" style="margin-top:32px; color:#C9D0DC;">
+      Den korte snak i køkkenet. Det at høre kollegaen brokke sig om en bug.
+      At drikke kaffe ved siden af nogen uden agenda. Det er væk —
+      og det er det, folk savner.
+    </p>
+
+    <div class="stat-row">
+      <div class="stat">
+        <div class="num">73<em>%</em></div>
+        <div class="lbl">af hybride medarbejdere oplever at "kontor-energien" mangler i hverdagen</div>
+      </div>
+      <div class="stat">
+        <div class="num">4<em>×</em></div>
+        <div class="lbl">flere planlagte møder i remote teams — uden tilsvarende effekt</div>
+      </div>
+      <div class="stat">
+        <div class="num">0</div>
+        <div class="lbl">spontane samtaler i et Teams-/Zoom-baseret kontor</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== 03 — INSIGHT =========================== -->
+<section data-screen-label="03 Insight">
+  <div class="topbar">
+    <div class="brand"><span class="logo-mark"></span> VirtualOffice</div>
+    <div>03 · Indsigt</div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; justify-content:center; height:100%; padding-top:40px;">
+    <div class="kicker">Kerneprincippet</div>
+    <p class="quote display" style="margin-top:40px;">
+      Et kontor er ikke et sted, man <em>mødes</em>.<br>
+      Det er et sted, man <em>er</em> — sammen.
+    </p>
+    <p class="body" style="margin-top:64px; font-size:26px; max-width:1100px;">
+      Tilstedeværelse, nærhed, tilfældighed. Hvis software skal erstatte
+      kontoret, må software genskabe præcis dét — ikke flere kalenderpunkter.
+    </p>
+  </div>
+</section>
+
+<!-- =========================== 04 — PRODUCT HERO =========================== -->
+<section data-screen-label="04 Product">
+  <div class="topbar">
+    <div class="brand"><span class="logo-mark"></span> VirtualOffice</div>
+    <div>04 · Produkt</div>
+  </div>
+
+  <div class="hero" style="padding-top:80px;">
+    <div>
+      <div class="kicker">Hvad er VirtualOffice</div>
+      <h2 class="display" style="margin-top:24px;">Et browser&shy;baseret 2D kontor.</h2>
+      <p class="body" style="margin-top:28px;">
+        Log ind. Se kontoret oppefra. Flyt din avatar. Tal automatisk med dem,
+        du går hen til — som var de fysisk ved siden af dig.
+        Ingen VPN, intet headset-setup, ingen kalenderinvitation.
+      </p>
+      <div class="tags">
+        <span class="pill"><span class="dot"></span> Spatial audio</span>
+        <span class="pill"><span class="dot" style="background:var(--sage);"></span> Microsoft SSO</span>
+        <span class="pill"><span class="dot" style="background:var(--amber);"></span> Outlook-sync</span>
+        <span class="pill"><span class="dot" style="background:#3E5A87;"></span> Multi-tenant SaaS</span>
+      </div>
+    </div>
+
+    <div class="floor">
+      <div class="grid-bg"></div>
+
+      <div class="corner-stamp">2CARE4 · STUEETAGE</div>
+      <div class="corner-stamp-r">40 × 30 TILES</div>
+
+      <!-- meeting rooms -->
+      <div class="room meeting" style="left:6%; top:8%; width:24%; height:32%;">
+        <div class="name">Mødelokale A</div>
+        <div class="meta-row"><span>8 pl.</span><span>booket 14:00</span></div>
+      </div>
+      <div class="room meeting" style="left:32%; top:8%; width:18%; height:24%;">
+        <div class="name">Lokale B</div>
+        <div class="meta-row"><span>4 pl.</span><span>ledig</span></div>
+      </div>
+      <div class="room focus" style="right:6%; top:8%; width:18%; height:22%;">
+        <div class="name">Fokus</div>
+        <div class="meta-row"><span>auto DND</span></div>
+      </div>
+      <div class="room social" style="right:6%; bottom:6%; width:24%; height:28%;">
+        <div class="name">Kaffe + køkken</div>
+        <div class="meta-row"><span>åben zone</span></div>
+      </div>
+
+      <!-- desks -->
+      <div class="desk" style="left:10%; top:55%;"></div>
+      <div class="desk" style="left:18%; top:55%;"></div>
+      <div class="desk" style="left:10%; top:68%;"></div>
+      <div class="desk" style="left:18%; top:68%;"></div>
+      <div class="desk" style="left:32%; top:55%;"></div>
+      <div class="desk" style="left:40%; top:55%;"></div>
+      <div class="desk" style="left:32%; top:68%;"></div>
+      <div class="desk" style="left:40%; top:68%;"></div>
+      <div class="desk" style="left:55%; top:48%;"></div>
+      <div class="desk" style="left:63%; top:48%;"></div>
+      <div class="desk" style="left:55%; top:61%;"></div>
+      <div class="desk" style="left:63%; top:61%;"></div>
+
+      <!-- avatars -->
+      <div class="avatar" style="left:13%; top:56%;">RK<div class="ring"></div></div>
+      <div class="avatar a-sage" style="left:21%; top:57%;">MN</div>
+      <div class="avatar a-navy" style="left:43%; top:69%;">SP</div>
+      <div class="avatar a-amber" style="left:58%; top:49%;">JL</div>
+      <div class="avatar a-plum" style="right:14%; bottom:18%;">EC</div>
+      <div class="avatar a-sage" style="left:15%; top:14%;">AB</div>
+
+      <!-- plants -->
+      <div class="plant" style="left:4%; bottom:6%;"></div>
+      <div class="plant" style="left:50%; bottom:6%;"></div>
+      <div class="plant" style="right:30%; top:14%;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== 05 — SPATIAL AUDIO =========================== -->
+<section data-screen-label="05 Spatial Audio" class="dark">
+  <div class="topbar">
+    <div class="brand"><span class="logo-mark"></span> VirtualOffice</div>
+    <div>05 · Spatial audio</div>
+  </div>
+
+  <div class="audio-explain" style="padding-top:60px;">
+    <div>
+      <div class="kicker">Sådan lyder nærhed</div>
+      <h2 class="display h-md" style="margin-top:24px;">Jo tættere på,<br>jo højere hører du dem.</h2>
+      <p class="body" style="margin-top:24px;">
+        VirtualOffice mixer lyd lokalt i browseren via LiveKit + Web Audio.
+        Volumen er en funktion af afstand — som i et fysisk rum.
+        Mødelokaler er lukkede lydzoner. Fokus-zoner aktiverer "Forstyr ikke" automatisk.
+      </p>
+
+      <div class="audio-legend">
+        <div class="row">
+          <div class="swatch" style="color:var(--terra);"></div>
+          <div class="t">0–3 tiles: fuld volume <small>som ved skrivebordet</small></div>
+        </div>
+        <div class="row">
+          <div class="swatch" style="color:var(--amber);"></div>
+          <div class="t">3–20 tiles: lineær fade <small>kontor-mumlen i baggrunden</small></div>
+        </div>
+        <div class="row">
+          <div class="swatch" style="color:var(--sage);"></div>
+          <div class="t">Social zone: 30 tile-radius <small>udvidet hørbarhed i køkkenet</small></div>
+        </div>
+        <div class="row">
+          <div class="swatch" style="color:#7A8FAC;"></div>
+          <div class="t">Mødelokale: lukket <small>ingen lyd ind eller ud</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="audio-diagram">
+      <div class="ring r4"></div>
+      <div class="ring r3"></div>
+      <div class="ring r2"></div>
+      <div class="ring r1"></div>
+
+      <div class="ring-label" style="left:50%; top:32%; transform:translate(-50%,-50%);">3 TILES · 100%</div>
+      <div class="ring-label" style="left:50%; top:18%; transform:translate(-50%,-50%);">20 TILES · 0%</div>
+
+      <div class="center">DU</div>
+      <div class="peer" style="background:var(--sage); left:60%; top:50%;">MN<span class="vol">VOL · 92%</span></div>
+      <div class="peer" style="background:var(--amber); left:30%; top:62%;">JL<span class="vol">VOL · 41%</span></div>
+      <div class="peer" style="background:#3E5A87; left:78%; top:30%;">SP<span class="vol">VOL · 8%</span></div>
+      <div class="peer" style="background:#7A4A6A; left:15%; top:18%;">EC<span class="vol">VOL · 0%</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== 06 — FLOOR DEMO =========================== -->
+<section data-screen-label="06 Demo">
+  <div class="topbar">
+    <div class="brand"><span class="logo-mark"></span> VirtualOffice</div>
+    <div>06 · Et kig på kontoret</div>
+  </div>
+
+  <div class="demo-shell" style="padding-top:80px;">
+    <div class="demo-head">
+      <div>
+        <div class="kicker">Live view</div>
+        <h2 class="display" style="margin-top:18px; font-size:72px;">En tirsdag kl. 10:42.</h2>
+      </div>
+      <div style="text-align:right;">
+        <div class="pill" style="font-size:12px;"><span class="dot"></span> 14 online · 2 i møde · 1 på fokus</div>
+      </div>
+    </div>
+
+    <div class="floor" style="aspect-ratio:auto; height:100%;">
+      <div class="grid-bg"></div>
+      <div class="corner-stamp">2CARE4 · STUEETAGE</div>
+      <div class="corner-stamp-r">VIEW · TOP-DOWN</div>
+
+      <!-- rooms -->
+      <div class="room meeting" style="left:5%; top:6%; width:22%; height:38%;">
+        <div class="name">Mødelokale A · Sprint planning</div>
+        <div class="meta-row"><span>5 deltagere</span><span>indtil 11:30</span></div>
+      </div>
+      <div class="room meeting" style="left:29%; top:6%; width:16%; height:28%;">
+        <div class="name">Lokale B</div>
+        <div class="meta-row"><span>ledig</span></div>
+      </div>
+      <div class="room focus" style="right:24%; top:6%; width:14%; height:24%;">
+        <div class="name">Fokus 1</div>
+        <div class="meta-row"><span>1 person</span></div>
+      </div>
+      <div class="room focus" style="right:6%; top:6%; width:14%; height:24%;">
+        <div class="name">Fokus 2</div>
+        <div class="meta-row"><span>tom</span></div>
+      </div>
+      <div class="room social" style="right:6%; bottom:8%; width:28%; height:32%;">
+        <div class="name">Kaffe + køkken</div>
+        <div class="meta-row"><span>åben · 3 personer</span></div>
+      </div>
+
+      <!-- desks (open office area) -->
+      <div class="desk" style="left:8%; top:55%;"></div>
+      <div class="desk" style="left:15%; top:55%;"></div>
+      <div class="desk" style="left:8%; top:70%;"></div>
+      <div class="desk" style="left:15%; top:70%;"></div>
+      <div class="desk" style="left:25%; top:55%;"></div>
+      <div class="desk" style="left:32%; top:55%;"></div>
+      <div class="desk" style="left:25%; top:70%;"></div>
+      <div class="desk" style="left:32%; top:70%;"></div>
+      <div class="desk" style="left:42%; top:50%;"></div>
+      <div class="desk" style="left:49%; top:50%;"></div>
+      <div class="desk" style="left:42%; top:65%;"></div>
+      <div class="desk" style="left:49%; top:65%;"></div>
+      <div class="desk" style="left:42%; top:80%;"></div>
+      <div class="desk" style="left:49%; top:80%;"></div>
+
+      <!-- avatars in meeting room -->
+      <div class="avatar a-navy" style="left:10%; top:20%;">RK</div>
+      <div class="avatar a-sage" style="left:16%; top:22%;">MN</div>
+      <div class="avatar a-amber" style="left:13%; top:30%;">JL</div>
+      <div class="avatar a-plum" style="left:19%; top:30%;">EC</div>
+      <div class="avatar" style="left:22%; top:24%;">SP</div>
+
+      <!-- avatar with audio bubble in open area -->
+      <div class="avatar" style="left:11%; top:56%;">AB<div class="ring"></div></div>
+      <div class="avatar a-sage" style="left:18%; top:57%;">DK</div>
+      <div class="avatar a-amber" style="left:28%; top:71%;">PO</div>
+
+      <!-- focus room -->
+      <div class="avatar a-navy" style="right:30%; top:14%;">TM</div>
+
+      <!-- kitchen -->
+      <div class="avatar a-amber" style="right:18%; bottom:20%;">LV<div class="ring"></div></div>
+      <div class="avatar a-plum" style="right:12%; bottom:18%;">FK</div>
+      <div class="avatar a-sage" style="right:24%; bottom:16%;">NB</div>
+
+      <!-- plants -->
+      <div class="plant" style="left:50%; bottom:30%;"></div>
+      <div class="plant" style="right:42%; bottom:10%;"></div>
+      <div class="plant" style="left:4%; bottom:8%;"></div>
+    </div>
+
+    <div class="demo-footer">
+      <div class="chips">
+        <span class="chip"><span class="sw" style="background:rgba(74,144,217,.6);"></span> Mødelokale</span>
+        <span class="chip"><span class="sw" style="background:rgba(213,160,74,.6);"></span> Fokus</span>
+        <span class="chip"><span class="sw" style="background:rgba(91,122,91,.6);"></span> Social</span>
+        <span class="chip"><span class="sw" style="background:#D8C9A2;"></span> Bord</span>
+        <span class="chip"><span class="sw" style="background:var(--terra); border-radius:99px;"></span> Avatar</span>
+      </div>
+      <div>14 online · 2 i møde · 1 på fokus</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== 07 — BOOKING =========================== -->
+<section data-screen-label="07 Booking">
+  <div class="topbar">
+    <div class="brand"><span class="logo-mark"></span> VirtualOffice</div>
+    <div>07 · Mødelokaler</div>
+  </div>
+
+  <div class="booking" style="padding-top:60px;">
+    <div>
+      <div class="kicker">Rumreservation</div>
+      <h2 class="display h-md" style="margin-top:24px;">Book som I plejer.<br>Bare smartere.</h2>
+      <p class="body" style="margin-top:28px;">
+        Klik på et mødelokale, vælg et tidsrum, og bookingen lander i alles
+        Outlook-kalendre via Microsoft Graph. Vi sender en 5-minutters notifikation
+        til alle online — i selve VirtualOffice — så ingen kommer 7 minutter for sent.
+      </p>
+
+      <div style="display:grid; gap:14px; margin-top:36px; max-width:520px;">
+        <div style="display:grid; grid-template-columns: 28px 1fr; gap:18px; align-items:start;">
+          <div style="width:14px; height:14px; border-radius:50%; background:var(--terra); margin-top:6px;"></div>
+          <div><strong style="font-weight:600;">Konflikt-fri</strong> — PostgreSQL exclusion-constraint forhindrer overlap på DB-niveau.</div>
+        </div>
+        <div style="display:grid; grid-template-columns: 28px 1fr; gap:18px; align-items:start;">
+          <div style="width:14px; height:14px; border-radius:50%; background:var(--sage); margin-top:6px;"></div>
+          <div><strong style="font-weight:600;">To-vejs sync</strong> — rumreservationer fra Outlook vises i VirtualOffice og omvendt.</div>
+        </div>
+        <div style="display:grid; grid-template-columns: 28px 1fr; gap:18px; align-items:start;">
+          <div style="width:14px; height:14px; border-radius:50%; background:#3E5A87; margin-top:6px;"></div>
+          <div><strong style="font-weight:600;">Stille notifikationer</strong> — pop op i kortet, ikke et email-spam.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="calendar">
+      <div class="ch">
+        <div class="room-title"><span class="sw"></span> Mødelokale A · Tirsdag 20. maj</div>
+        <div class="meta">8 PL. · BOOKBAR</div>
+      </div>
+      <div class="grid">
+        <div class="time">09:00</div><div class="slot"><div class="ev outlook">Standup<div class="who">SP · MN · JL</div></div></div>
+        <div class="time">09:30</div><div class="slot"></div>
+        <div class="time">10:00</div><div class="slot"><div class="ev now tall">Sprint planning · nu<div class="who">5 deltagere · auto-synket til Outlook</div></div></div>
+        <div class="time">10:30</div><div class="slot"></div>
+        <div class="time">11:00</div><div class="slot"></div>
+        <div class="time">11:30</div><div class="slot"></div>
+        <div class="time">12:00</div><div class="slot"></div>
+        <div class="time">13:00</div><div class="slot"><div class="ev next">Roadmap-review<div class="who">RK · EC · DK</div></div></div>
+        <div class="time">14:00</div><div class="slot"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== 08 — MIT BORD =========================== -->
+<section data-screen-label="08 Mit bord" class="dark">
+  <div class="topbar">
+    <div class="brand"><span class="logo-mark"></span> VirtualOffice</div>
+    <div>08 · Mit bord</div>
+  </div>
+
+  <div class="desk-view" style="padding-top:60px;">
+    <div class="desk-mock" style="background:#EEE6CF;">
+      <div class="grid-bg" style="background-image: linear-gradient(rgba(122,110,85,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(122,110,85,.12) 1px, transparent 1px); background-size: 24px 24px; position:absolute; inset:0; border-radius:18px;"></div>
+      <div class="name-tag">Rasmus' bord · Plads 12</div>
+      <div class="busy"><span class="dot"></span> Available</div>
+      <div class="surface"></div>
+      <div class="frame"></div>
+      <div class="photo"></div>
+      <div class="trophy">★</div>
+      <div class="lamp"></div>
+      <div class="plant"></div>
+    </div>
+
+    <div>
+      <div class="kicker">Personlig tilstedeværelse</div>
+      <h2 class="display h-md" style="margin-top:24px;">Et bord der ligner dig.</h2>
+      <p class="body" style="margin-top:28px;">
+        Hver medarbejder får sit eget skrivebord. Tema, baggrundsfarve, et foto fra ferien,
+        en lampe der lyser rødt når man ikke vil forstyrres. Trofæer fra kollegers tak vises
+        som små objekter — synlige nok til at få et smil, små nok til ikke at støje.
+      </p>
+
+      <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:18px; margin-top:36px; max-width:600px;">
+        <div class="pill" style="justify-content:flex-start;"><span class="dot"></span> Busy light (DND)</div>
+        <div class="pill" style="justify-content:flex-start;"><span class="dot" style="background:var(--sage);"></span> Tema og farver</div>
+        <div class="pill" style="justify-content:flex-start;"><span class="dot" style="background:var(--amber);"></span> Trofæer fra kolleger</div>
+        <div class="pill" style="justify-content:flex-start;"><span class="dot" style="background:#7A8FAC;"></span> Familiefoto / dekor</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== 09 — MICROSOFT 365 =========================== -->
+<section data-screen-label="09 Microsoft 365">
+  <div class="topbar">
+    <div class="brand"><span class="logo-mark"></span> VirtualOffice</div>
+    <div>09 · Integration</div>
+  </div>
+
+  <div style="padding-top:80px;">
+    <div class="kicker">Bygget til Microsoft 365-organisationer</div>
+    <h2 class="display h-md" style="margin-top:24px; max-width:1500px;">
+      Jeres Azure AD og Outlook — uden flytning, uden migration.
+    </h2>
+    <p class="body" style="margin-top:24px; max-width:900px;">
+      VirtualOffice integrerer på de to punkter, der betyder noget for jeres IT-afdeling:
+      identitet og kalender. Resten ligger pænt isoleret i vores stack.
+    </p>
+
+    <div class="ms-grid">
+      <div class="ms-card">
+        <div class="icon">SSO</div>
+        <h4>Microsoft Entra ID</h4>
+        <p>OAuth2-flow via MSAL. Brugere logger ind med jeres eksisterende konti.
+        Auto-provisioning af nye medarbejdere via tenant-binding.</p>
+        <ul>
+          <li>Delegated permissions, ingen lagrede passwords</li>
+          <li>Multi-tenant — kun jeres tenant kan logge ind</li>
+          <li>Conditional Access og MFA respekteres</li>
+        </ul>
+      </div>
+      <div class="ms-card">
+        <div class="icon calendar">CAL</div>
+        <h4>Outlook & Graph API</h4>
+        <p>Mødelokaler synkroniseres med jeres Exchange resource mailboxes.
+        Bookinger findes i begge kalendre. Afbud det ene sted afbestiller det andet.</p>
+        <ul>
+          <li>Place.Read.All + Calendars.ReadWrite</li>
+          <li>Webhook-baseret to-vejs sync</li>
+          <li>Krypterede refresh tokens i Azure Key Vault</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== 10 — ARKITEKTUR / SIKKERHED =========================== -->
+<section data-screen-label="10 Arkitektur" class="dark">
+  <div class="topbar">
+    <div class="brand"><span class="logo-mark"></span> VirtualOffice</div>
+    <div>10 · Arkitektur og sikkerhed</div>
+  </div>
+
+  <div style="padding-top:80px;">
+    <div class="kicker">For jeres IT-ansvarlige</div>
+    <h2 class="display h-md" style="margin-top:24px;">Hostet på Azure.<br>Isoleret pr. organisation.</h2>
+
+    <div class="arch-cols">
+      <div class="arch-col">
+        <div class="lab">FRONTEND</div>
+        <div class="ttl">Next.js 14</div>
+        <ul>
+          <li>App Router + JWT-baseret session</li>
+          <li>Phaser.js til kort og avatarer</li>
+          <li>react-konva til Map Editor</li>
+        </ul>
+      </div>
+      <div class="arch-col">
+        <div class="lab">REAL-TIME</div>
+        <div class="ttl">LiveKit</div>
+        <ul>
+          <li>WebRTC audio med spatial mixing</li>
+          <li>Data channels til positioner (&lt;50ms)</li>
+          <li>Self-hosted på Azure VM</li>
+        </ul>
+      </div>
+      <div class="arch-col">
+        <div class="lab">DATA</div>
+        <div class="ttl">PostgreSQL 15</div>
+        <ul>
+          <li>Row-Level Security pr. org_id</li>
+          <li>Geo-redundant backup (7 dage)</li>
+          <li>Soft delete + audit trail</li>
+        </ul>
+      </div>
+      <div class="arch-col">
+        <div class="lab">SIKKERHED</div>
+        <div class="ttl">Compliance-ready</div>
+        <ul>
+          <li>Azure Key Vault til alle secrets</li>
+          <li>GDPR — data i EU-region</li>
+          <li>SOC 2-spor: V4-roadmap</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sec-row">
+      <span class="pill">EU-hostet</span>
+      <span class="pill">Krypteret i transit + at rest</span>
+      <span class="pill">Tenant-isolation på DB-niveau</span>
+      <span class="pill">No-VPN-required</span>
+      <span class="pill">99.9% uptime mål</span>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== 11 — PILOT =========================== -->
+<section data-screen-label="11 Pilot">
+  <div class="topbar">
+    <div class="brand"><span class="logo-mark"></span> VirtualOffice</div>
+    <div>11 · Piloten</div>
+  </div>
+
+  <div class="pilot" style="padding-top:60px;">
+    <div>
+      <div class="kicker">6 uger med 2care4</div>
+      <h2 class="display h-md" style="margin-top:20px;">En faktisk pilot. Ikke en demo.</h2>
+    </div>
+
+    <div class="pilot-weeks">
+      <div class="week">
+        <div class="num">01</div>
+        <div class="lab">Uge 1 · Setup</div>
+        <h4>Onboarding</h4>
+        <p>Opsætning af 2care4-org, import af kontorplan, brugere via Azure AD.</p>
+      </div>
+      <div class="week hi">
+        <div class="num">02</div>
+        <div class="lab">Uge 2–3 · Brug</div>
+        <h4>Daglig drift</h4>
+        <p>Spatial audio og tilstedeværelse i hverdagen. Vi monitorerer brugsmønstre.</p>
+      </div>
+      <div class="week">
+        <div class="num">03</div>
+        <div class="lab">Uge 4 · Outlook</div>
+        <h4>Kalender-sync</h4>
+        <p>Aktivering af rumreservation med eksisterende Outlook-ressourcer.</p>
+      </div>
+      <div class="week">
+        <div class="num">04</div>
+        <div class="lab">Uge 5 · Feedback</div>
+        <h4>Bruger&shy;interviews</h4>
+        <p>Struktureret feedback-session med 5–8 brugere. NPS måles.</p>
+      </div>
+      <div class="week">
+        <div class="num">05</div>
+        <div class="lab">Uge 6 · Beslutning</div>
+        <h4>Prioritering</h4>
+        <p>Rettelser, V2-backlog og beslutning om fortsat samarbejde.</p>
+      </div>
+      <div class="week">
+        <div class="num">06</div>
+        <div class="lab">Efter pilot</div>
+        <h4>Continuation</h4>
+        <p>Team-plan med løbende seat-management og Outlook fuldt aktiveret.</p>
+      </div>
+    </div>
+
+    <div class="kpi-strip">
+      <div class="kpi">
+        <div class="v">≥ 70<span style="color:var(--terra); font-size:32px;">%</span></div>
+        <div class="l">Succeskriterie 1</div>
+        <div class="d">Daglig aktiv brug blandt inviterede i uge 2–3</div>
+      </div>
+      <div class="kpi">
+        <div class="v">NPS > 30</div>
+        <div class="l">Succeskriterie 2</div>
+        <div class="d">Måles efter 4 ugers brug — branche-baseline ~15</div>
+      </div>
+      <div class="kpi">
+        <div class="v">0</div>
+        <div class="l">Succeskriterie 3</div>
+        <div class="d">Kritiske lyd-bugs rapporteret i pilotperioden</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== 12 — PRICING =========================== -->
+<section data-screen-label="12 Pricing" class="dark">
+  <div class="topbar">
+    <div class="brand"><span class="logo-mark"></span> VirtualOffice</div>
+    <div>12 · Pricing</div>
+  </div>
+
+  <div style="padding-top:60px;">
+    <div class="kicker">Tre planer · faktureres pr. seat</div>
+    <h2 class="display h-md" style="margin-top:20px;">Start gratis. Skalér når I er klar.</h2>
+
+    <div class="price-grid">
+      <div class="plan">
+        <div class="name">Starter</div>
+        <div class="price"><span class="amt">0</span><span class="per">kr / mdr</span></div>
+        <div class="desc">Til små teams og uformel test. Op til 10 brugere, 1 etage.</div>
+        <ul>
+          <li>Spatial audio og avatar-bevægelse</li>
+          <li>Email/password login</li>
+          <li>Personlige borde</li>
+        </ul>
+        <div class="cta">Kom i gang</div>
+      </div>
+
+      <div class="plan hi">
+        <div class="badge">Anbefalet til 2care4</div>
+        <div class="name">Team</div>
+        <div class="price"><span class="amt">49</span><span class="per">kr / seat / mdr</span></div>
+        <div class="desc">Til daglig brug. Microsoft SSO, op til 3 etager, op til 50 brugere.</div>
+        <ul>
+          <li>Alt i Starter</li>
+          <li>Microsoft Entra ID SSO</li>
+          <li>Mødelokale-booking i appen</li>
+          <li>Map Editor (egne kort)</li>
+          <li>Email-support</li>
+        </ul>
+        <div class="cta">Pilot starter her</div>
+      </div>
+
+      <div class="plan">
+        <div class="name">Business</div>
+        <div class="price"><span class="amt">79</span><span class="per">kr / seat / mdr</span></div>
+        <div class="desc">Ubegrænset skalering. Til 50+ ansatte og fuld Microsoft 365-integration.</div>
+        <ul>
+          <li>Alt i Team</li>
+          <li>Outlook to-vejs sync via Graph</li>
+          <li>Ubegrænsede etager + custom map</li>
+          <li>Tenant-binding og auto-provisioning</li>
+          <li>Prioriteret support og SLA</li>
+        </ul>
+        <div class="cta">Kontakt salg</div>
+      </div>
+    </div>
+
+    <p class="mute" style="margin-top:32px;">Årlig fakturering: 20% rabat. 30 dages gratis prøveperiode på alle betalte planer.</p>
+  </div>
+</section>
+
+<!-- =========================== 13 — ROADMAP =========================== -->
+<section data-screen-label="13 Roadmap">
+  <div class="topbar">
+    <div class="brand"><span class="logo-mark"></span> VirtualOffice</div>
+    <div>13 · Roadmap</div>
+  </div>
+
+  <div style="padding-top:80px;">
+    <div class="kicker">12 måneders plan</div>
+    <h2 class="display h-md" style="margin-top:20px;">Fra MVP til enterprise.</h2>
+
+    <div class="road">
+      <div class="phase now">
+        <div class="marker"></div>
+        <div class="when">Q3 2026 · NU</div>
+        <div class="label">MVP</div>
+        <div class="est">8–10 uger</div>
+        <ul>
+          <li>Spatial audio + kort</li>
+          <li>Microsoft SSO</li>
+          <li>Personlige borde og DND</li>
+          <li>Starter + Team plan</li>
+          <li>2care4-pilot</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="marker"></div>
+        <div class="when">Q4 2026</div>
+        <div class="label">V2 · Interaktion</div>
+        <div class="est">+ 5–6 uger</div>
+        <ul>
+          <li>Built-in Map Editor</li>
+          <li>Outlook to-vejs sync</li>
+          <li>"Sig hej" + giv-noget</li>
+          <li>Business-plan launches</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="marker"></div>
+        <div class="when">Q1 2027</div>
+        <div class="label">V3 · Engagement</div>
+        <div class="est">+ 4–5 uger</div>
+        <ul>
+          <li>Trofæer + leaderboard</li>
+          <li>Mini-games og udfordringer</li>
+          <li>Avatar-customization</li>
+          <li>Team-zone dekoration</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <div class="marker"></div>
+        <div class="when">Q2 2027</div>
+        <div class="label">V4 · Enterprise</div>
+        <div class="est">+ 6–8 uger</div>
+        <ul>
+          <li>Mobile-app (iOS/Android)</li>
+          <li>SAML + non-MS SSO</li>
+          <li>SOC 2 type II-spor</li>
+          <li>Avanceret skalering</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================== 14 — CTA =========================== -->
+<section data-screen-label="14 Next Step" class="dark">
+  <div class="topbar">
+    <div class="brand"><span class="logo-mark"></span> VirtualOffice</div>
+    <div>14 · Næste skridt</div>
+  </div>
+
+  <div class="cta-slide">
+    <div>
+      <div class="kicker">Lad os prøve det af</div>
+      <h2 class="display" style="margin-top:24px;">Skal vi<br>begynde?<span style="color:var(--terra);">.</span></h2>
+      <p class="body" style="margin-top:32px; max-width:600px;">
+        Vi sætter 2care4 op i denne uge. Inden for tre uger har jeres team
+        haft 30+ tilfældige kaffe-snakke, der ikke var planlagte.
+        Det er den eneste KPI, der reelt betyder noget.
+      </p>
+    </div>
+
+    <div class="next-card">
+      <div class="step">
+        <div class="n">01</div>
+        <div>
+          <h5>Kickoff-møde (45 min)</h5>
+          <p>Vi gennemgår jeres nuværende kontorplan, Azure AD-setup og navngiver pilot-deltagere.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n">02</div>
+        <div>
+          <h5>Uge 1 — opsætning</h5>
+          <p>Vi importerer kontorplan, opretter brugere via Azure AD, og I tester med 3 personer.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n">03</div>
+        <div>
+          <h5>Uge 2–6 — pilot</h5>
+          <p>Hele IT-afdelingen er på. Vi måler, justerer og kører feedback-session i uge 5.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n">04</div>
+        <div>
+          <h5>Beslutning</h5>
+          <p>Efter uge 6 beslutter I om Team-planen rulles ud — eller om vi siger pænt farvel.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute; bottom:48px; left:96px; right:96px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:#9AA6B6;">
+    <div>VirtualOffice ApS · CVR 00000000</div>
+    <div>rasmus@virtualoffice.app · +45 00 00 00 00</div>
+    <div>virtualoffice.app</div>
+  </div>
+</section>
+
+</deck-stage>
+
+</body>
+</html>
