@@ -261,6 +261,7 @@ let dragState = null;
 let keys = {};
 let rafId = null;
 let lastTick = performance.now();
+let lastDt = 0;  // seconds, for dt-based smoothing
 
 // --- Layout helpers ---
 function pointInRoom(px, py, room) {
@@ -349,12 +350,7 @@ function createSpatialNode(track) {
   gain.connect(panner);
   panner.connect(ctx.destination);
 
-  // Optional: analyser for debugging
-  const analyser = ctx.createAnalyser();
-  analyser.fftSize = 256;
-  gain.connect(analyser);
-
-  return { panner, gain, source, analyser, stream };
+  return { panner, gain, source, stream };
 }
 
 function disposeSpatialNode(nodes) {
@@ -363,7 +359,6 @@ function disposeSpatialNode(nodes) {
     nodes.source.disconnect();
     nodes.gain.disconnect();
     nodes.panner.disconnect();
-    if (nodes.analyser) nodes.analyser.disconnect();
     if (nodes.stream) nodes.stream.getTracks().forEach(t => t.stop());
   } catch (e) {
     console.warn('Error disposing spatial node:', e);
@@ -421,10 +416,11 @@ function updateSpatialAudio() {
 
     if (gain > 0) activeCount++;
 
-    // Smooth gain transition
+    // Smooth gain transition (dt-based, tau ≈ 0.08s for responsiveness)
     const currentGain = nodes.gain.gain.value;
     const targetGain = gain;
-    nodes.gain.gain.value = currentGain + (targetGain - currentGain) * 0.1;
+    const smoothFactor = 1 - Math.exp(-lastDt / 0.08);
+    nodes.gain.gain.value = currentGain + (targetGain - currentGain) * smoothFactor;
 
     // Equal-power panning based on horizontal offset
     const pan = computePan(dx);
@@ -465,52 +461,54 @@ function updateDebugPanel(lines) {
     return;
   }
   panel.style.display = 'block';
-  entries.innerHTML = lines.map(l =>
-    `<div class="entry">
+  entries.innerHTML = lines.map(l => {
+    const dB = 20 * Math.log10(Math.max(l.gain, 1e-7));
+    return `<div class="entry">
       <span class="peer">${l.name}</span>
       d=${l.dist}px
-      <span class="gain">+${(20 * Math.log10(l.gain)).toFixed(1)}dB</span>
+      <span class="gain">${dB > 0 ? '+' : ''}${dB.toFixed(1)}dB</span>
       <span class="pan">pan=${l.pan}</span>
       <span>${l.zone}</span>
-    </div>`
-  ).join('');
+    </div>`;
+  }).join('');
 }
 
 // --- LiveKit integration ---
 async function connectLiveKit(serverUrl, token) {
-  if (!window.LiveKitClient) {
+  const LK = window.LivekitClient;
+  if (!LK) {
     throw new Error('LiveKit SDK not loaded');
   }
 
-  const room = new LiveKitClient.Room({
+  const room = new LK.Room({
     adaptiveStream: true,
     dynacast: true,
   });
 
-  room.on(LiveKitClient.RoomEvent.TrackSubscribed, (track, publication, participant) => {
+  room.on(LK.RoomEvent.TrackSubscribed, (track, publication, participant) => {
     if (track.kind === 'audio') {
       handleRemoteAudioTrack(track, participant);
     }
   });
 
-  room.on(LiveKitClient.RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
+  room.on(LK.RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
     if (track.kind === 'audio') {
       handleRemoteAudioTrackRemoved(participant);
     }
   });
 
-  room.on(LiveKitClient.RoomEvent.ParticipantConnected, (participant) => {
+  room.on(LK.RoomEvent.ParticipantConnected, (participant) => {
     console.log('Participant connected:', participant.identity, participant.name);
     addPeer(participant.identity, participant.name || participant.identity);
   });
 
-  room.on(LiveKitClient.RoomEvent.ParticipantDisconnected, (participant) => {
+  room.on(LK.RoomEvent.ParticipantDisconnected, (participant) => {
     console.log('Participant disconnected:', participant.identity);
     removePeer(participant.identity);
   });
 
   // Data channel for position sync
-  room.on(LiveKitClient.RoomEvent.DataReceived, (payload, participant) => {
+  room.on(LK.RoomEvent.DataReceived, (payload, participant) => {
     try {
       const data = JSON.parse(new TextDecoder().decode(payload));
       if (data.type === 'position') {
@@ -543,7 +541,7 @@ async function enableLocalMic(room) {
         autoGainControl: true,
       },
     });
-    const track = await LiveKitClient.LocalAudioTrack.createAudioTrack('mic', stream.getAudioTracks()[0]);
+    const track = await LK.LocalAudioTrack.createAudioTrack('mic', stream.getAudioTracks()[0]);
     await room.localParticipant.publishTrack(track);
     localTrack = track;
     micEnabled = true;
@@ -1001,8 +999,10 @@ function setupInput() {
 
 // --- Game loop ---
 function gameLoop(now) {
+  try {
   const dt = Math.min((now - lastTick) / 1000, 0.1); // cap delta to 0.1s
   lastTick = now;
+  lastDt = dt;
 
   // Player movement — WASD
   let dx = 0, dy = 0;
@@ -1048,11 +1048,41 @@ function gameLoop(now) {
   draw();
 
   rafId = requestAnimationFrame(gameLoop);
+  } catch (e) {
+    console.error('Game loop error, restarting in 1s:', e);
+    setTimeout(() => { rafId = requestAnimationFrame(gameLoop); }, 1000);
+  }
 }
 
 // --- Initialization ---
 function init() {
   initCanvas();
+
+  // Page visibility — pause rAF when tab is hidden
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    } else {
+      if (!rafId) {
+        lastTick = performance.now();
+        rafId = requestAnimationFrame(gameLoop);
+      }
+    }
+  });
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    if (rafId) cancelAnimationFrame(rafId);
+    if (audioContext) {
+      audioContext.close().catch(e => console.warn('Error closing AudioContext:', e));
+    }
+    if (livekitRoom) {
+      livekitRoom.disconnect();
+    }
+  });
 
   // Check for URL token
   const params = new URLSearchParams(window.location.search);
@@ -1079,20 +1109,27 @@ function init() {
 window.toggleConnection = toggleConnection;
 window.toggleMic = toggleMic;
 
-// Load LiveKit SDK then init
-const script = document.createElement('script');
-script.src = 'https://cdn.jsdelivr.net/npm/livekit-client@latest/dist/livekit-client.umd.min.js';
-script.onload = () => {
-  console.log('LiveKit SDK loaded');
-  init();
-};
-script.onerror = () => {
-  console.error('Failed to load LiveKit SDK — running in visual-demo mode');
-  // Still init for visual layout / spatial audio demo (no LiveKit)
-  window.LiveKitClient = null;
-  init();
-};
-document.head.appendChild(script);
+// Load LiveKit SDK then init (with retry fallback)
+(function loadLiveKitSDK(attempts) {
+  attempts = attempts || 1;
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/livekit-client@latest/dist/livekit-client.umd.min.js';
+  script.onload = () => {
+    console.log('LiveKit SDK loaded');
+    init();
+  };
+  script.onerror = () => {
+    console.warn(`LiveKit SDK load attempt ${attempts} failed`);
+    if (attempts < 3) {
+      // Retry after a short delay
+      setTimeout(() => loadLiveKitSDK(attempts + 1), 2000);
+    } else {
+      console.error('Failed to load LiveKit SDK after 3 attempts — running in visual-demo mode');
+      init();
+    }
+  };
+  document.head.appendChild(script);
+})();
 </script>
 </body>
 </html>
