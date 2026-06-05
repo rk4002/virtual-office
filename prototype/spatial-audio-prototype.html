@@ -474,8 +474,10 @@ function updateDebugPanel(lines) {
 }
 
 // --- LiveKit integration ---
+// Module-scoped LK reference so enableLocalMic/toggleMic work outside connectLiveKit closure
+const LK = window.LivekitClient;
+
 async function connectLiveKit(serverUrl, token) {
-  const LK = window.LivekitClient;
   if (!LK) {
     throw new Error('LiveKit SDK not loaded');
   }
