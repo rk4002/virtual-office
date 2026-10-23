@@ -428,7 +428,7 @@ export default function OfficePage() {
 
       {/* Main area: canvas + chat panel + presence sidebar */}
       <div className="flex flex-1 overflow-hidden">
-        <div ref={canvasContainerRef} className="flex-1 relative">
+        <div ref={canvasContainerRef} className="flex-1 relative flex">
           <LazyOfficeCanvas
             player={player}
             peers={peers}

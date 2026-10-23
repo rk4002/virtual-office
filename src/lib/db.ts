@@ -1,7 +1,7 @@
 // VirtualOffice — Vercel Postgres client + schema helpers
 // Provides typed DB access for office layouts and room configurations.
 
-import { sql } from "@vercel/postgres";
+import { sql } from "./sql";
 
 // ── Layout types ──────────────────────────────────────────────────────────
 
@@ -282,7 +282,7 @@ export async function initChatSchema(): Promise<void> {
       x             FLOAT8 NOT NULL DEFAULT 0,
       y             FLOAT8 NOT NULL DEFAULT 0,
       created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-      expires_at    TIMESTAMPTZ DEFAULT now() + make_interval(secs => ${CHAT_MESSAGE_TTL_SECONDS})
+      expires_at    TIMESTAMPTZ DEFAULT now() + interval '300 seconds'
     );
   `;
 
@@ -303,8 +303,7 @@ export async function initChatSchema(): Promise<void> {
 
   await sql`
     CREATE INDEX IF NOT EXISTS idx_chat_messages_active
-    ON chat_messages (scope, room_id)
-    WHERE expires_at > now();
+    ON chat_messages (scope, room_id, expires_at);
   `;
 }
 
@@ -965,6 +964,229 @@ function rowToMeetingSummary(row: MeetingSummaryRow): MeetingSummary {
     summary: row.summary,
     message_count: row.message_count,
     created_at: new Date(row.created_at).toISOString(),
+  };
+}
+
+// ── Breakout Rooms ──────────────────────────────────────────────────────────
+//
+// Breakout rooms split a parent meeting room into mindre grupper med hver
+// deres egen spatial audio zone. Each breakout is a separate LiveKit room.
+// Deltagere forbliver i det visuelle møderum men hører kun folk i deres breakout.
+
+export interface BreakoutRoom {
+  id: string;
+  parent_room_id: string;      // the office room ID (e.g. "meeting-a")
+  name: string;                // e.g. "Gruppe 1", "Brainstorm"
+  livekit_room_name: string;   // the LiveKit room name for this breakout
+  created_by: string;          // user_id
+  created_by_name: string;
+  created_at: string;
+  closed: boolean;
+}
+
+type BreakoutRoomRow = {
+  id: string;
+  parent_room_id: string;
+  name: string;
+  livekit_room_name: string;
+  created_by: string;
+  created_by_name: string;
+  created_at: Date;
+  closed: boolean;
+};
+
+// Track which user is in which breakout room
+export interface BreakoutParticipant {
+  breakout_id: string;
+  user_id: string;
+  user_name: string;
+  joined_at: string;
+}
+
+type BreakoutParticipantRow = {
+  breakout_id: string;
+  user_id: string;
+  user_name: string;
+  joined_at: Date;
+};
+
+export async function initBreakoutRoomsSchema(): Promise<void> {
+  await sql`
+    CREATE TABLE IF NOT EXISTS breakout_rooms (
+      id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      parent_room_id    TEXT NOT NULL,
+      name              TEXT NOT NULL,
+      livekit_room_name TEXT NOT NULL,
+      created_by        TEXT NOT NULL,
+      created_by_name   TEXT NOT NULL,
+      created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+      closed            BOOLEAN NOT NULL DEFAULT FALSE
+    );
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS breakout_participants (
+      breakout_id  UUID NOT NULL REFERENCES breakout_rooms(id) ON DELETE CASCADE,
+      user_id      TEXT NOT NULL,
+      user_name    TEXT NOT NULL,
+      joined_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (breakout_id, user_id)
+    );
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_breakout_rooms_parent
+    ON breakout_rooms (parent_room_id) WHERE closed = FALSE;
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_breakout_participants_breakout
+    ON breakout_participants (breakout_id);
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_breakout_participants_user
+    ON breakout_participants (user_id);
+  `;
+}
+
+/** Opret en ny breakout room til et møderum */
+export async function createBreakoutRoom(params: {
+  parent_room_id: string;
+  name: string;
+  created_by: string;
+  created_by_name: string;
+}): Promise<BreakoutRoom> {
+  const livekitRoomName = `breakout-${params.parent_room_id}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+  const { rows } = await sql<BreakoutRoomRow>`
+    INSERT INTO breakout_rooms (parent_room_id, name, livekit_room_name, created_by, created_by_name)
+    VALUES (${params.parent_room_id}, ${params.name}, ${livekitRoomName}, ${params.created_by}, ${params.created_by_name})
+    RETURNING *;
+  `;
+  return rowToBreakoutRoom(rows[0]);
+}
+
+/** Hent alle aktive breakout rooms for et møderum */
+export async function getBreakoutRooms(parent_room_id: string): Promise<BreakoutRoom[]> {
+  const { rows } = await sql<BreakoutRoomRow>`
+    SELECT * FROM breakout_rooms
+    WHERE parent_room_id = ${parent_room_id} AND closed = FALSE
+    ORDER BY created_at ASC;
+  `;
+  return rows.map(rowToBreakoutRoom);
+}
+
+/** Hent en enkelt breakout room */
+export async function getBreakoutRoom(breakout_id: string): Promise<BreakoutRoom | null> {
+  const { rows } = await sql<BreakoutRoomRow>`
+    SELECT * FROM breakout_rooms WHERE id = ${breakout_id};
+  `;
+  if (rows.length === 0) return null;
+  return rowToBreakoutRoom(rows[0]);
+}
+
+/** Luk en breakout room (alle deltagere smides tilbage til parent) */
+export async function closeBreakoutRoom(breakout_id: string): Promise<boolean> {
+  const { rowCount } = await sql`
+    UPDATE breakout_rooms SET closed = TRUE WHERE id = ${breakout_id};
+  `;
+  // Remove all participants when closing
+  await sql`DELETE FROM breakout_participants WHERE breakout_id = ${breakout_id};`;
+  return (rowCount ?? 0) > 0;
+}
+
+/** En bruger joiner en breakout room (forlader automatisk enhver anden breakout) */
+export async function joinBreakoutRoom(params: {
+  breakout_id: string;
+  user_id: string;
+  user_name: string;
+}): Promise<BreakoutParticipant> {
+  // Leave any other breakout first
+  await leaveAllBreakouts(params.user_id);
+
+  const { rows } = await sql<BreakoutParticipantRow>`
+    INSERT INTO breakout_participants (breakout_id, user_id, user_name)
+    VALUES (${params.breakout_id}, ${params.user_id}, ${params.user_name})
+    ON CONFLICT (breakout_id, user_id) DO UPDATE SET
+      user_name = ${params.user_name},
+      joined_at = now()
+    RETURNING *;
+  `;
+  return rowToBreakoutParticipant(rows[0]);
+}
+
+/** Forlad alle breakouts for en given bruger */
+export async function leaveAllBreakouts(user_id: string): Promise<number> {
+  const { rowCount } = await sql`
+    DELETE FROM breakout_participants WHERE user_id = ${user_id};
+  `;
+  return rowCount ?? 0;
+}
+
+/** Hvilken breakout er en bruger i lige nu? */
+export async function getUserBreakout(user_id: string): Promise<BreakoutRoom | null> {
+  const { rows } = await sql<BreakoutRoomRow>`
+    SELECT br.* FROM breakout_rooms br
+    JOIN breakout_participants bp ON br.id = bp.breakout_id
+    WHERE bp.user_id = ${user_id} AND br.closed = FALSE
+    LIMIT 1;
+  `;
+  if (rows.length === 0) return null;
+  return rowToBreakoutRoom(rows[0]);
+}
+
+/** Hent alle deltagere i en breakout room */
+export async function getBreakoutParticipants(breakout_id: string): Promise<BreakoutParticipant[]> {
+  const { rows } = await sql<BreakoutParticipantRow>`
+    SELECT * FROM breakout_participants WHERE breakout_id = ${breakout_id};
+  `;
+  return rows.map(rowToBreakoutParticipant);
+}
+
+/** Hent deltagerne samt deres breakout-info for alle active breakouts i et parent room */
+export async function getBreakoutParticipantsForRoom(
+  parent_room_id: string,
+): Promise<Map<string, BreakoutParticipant[]>> {
+  const { rows } = await sql<BreakoutParticipantRow & { breakout_id: string }>`
+    SELECT bp.* FROM breakout_participants bp
+    JOIN breakout_rooms br ON br.id = bp.breakout_id
+    WHERE br.parent_room_id = ${parent_room_id} AND br.closed = FALSE
+    ORDER BY bp.joined_at ASC;
+  `;
+
+  const result = new Map<string, BreakoutParticipant[]>();
+  for (const row of rows) {
+    const p = rowToBreakoutParticipant(row as BreakoutParticipantRow);
+    const existing = result.get((row as { breakout_id: string }).breakout_id);
+    if (existing) {
+      existing.push(p);
+    } else {
+      result.set((row as { breakout_id: string }).breakout_id, [p]);
+    }
+  }
+  return result;
+}
+
+function rowToBreakoutRoom(row: BreakoutRoomRow): BreakoutRoom {
+  return {
+    id: row.id,
+    parent_room_id: row.parent_room_id,
+    name: row.name,
+    livekit_room_name: row.livekit_room_name,
+    created_by: row.created_by,
+    created_by_name: row.created_by_name,
+    created_at: new Date(row.created_at).toISOString(),
+    closed: row.closed,
+  };
+}
+
+function rowToBreakoutParticipant(row: BreakoutParticipantRow): BreakoutParticipant {
+  return {
+    breakout_id: row.breakout_id,
+    user_id: row.user_id,
+    user_name: row.user_name,
+    joined_at: new Date(row.joined_at).toISOString(),
   };
 }
 

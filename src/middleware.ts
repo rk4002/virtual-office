@@ -10,15 +10,17 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const isAuthPage = req.nextUrl.pathname === "/login";
   const isApiAuth = req.nextUrl.pathname.startsWith("/api/auth");
+  const isLocalLogin = req.nextUrl.pathname === "/api/local-login";
+  const localLogin = process.env.LOCAL_LOGIN === "true";
 
   // Allow unauthenticated access to auth pages and auth API routes
-  if (isApiAuth || isAuthPage) {
+  if (isApiAuth || isAuthPage || isLocalLogin) {
     return NextResponse.next();
   }
 
-  // Redirect unauthenticated users to login
+  // Redirect unauthenticated users to login — lokalt direkte til auto-login
   if (!isLoggedIn) {
-    const loginUrl = new URL("/login", req.url);
+    const loginUrl = new URL(localLogin ? "/api/local-login" : "/login", req.url);
     loginUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
