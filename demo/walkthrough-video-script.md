@@ -2,7 +2,7 @@
 
 **Format:** Screen-recording med voice-over (ingen kamera)  
 **Varighed:** 3 min 00 sek (180 sek i alt)  
-**Målgruppe:** 2care4 beslutningstager — første indtryk inden live demo  
+**Målgruppe:** Beslutningstager hos Nicehair — første indtryk inden live demo  
 **Tone:** Rolig, professionel, dansk
 
 ---
@@ -13,7 +13,7 @@
 - Voice-over: Rasmus K. — rolig, lav tempo, naturlig (ikke sælger-tone)
 - Ingen baggrundsmusik under voice-over (evt. subtil ambience helt lavt)
 - Undertekster anbefales (auto-genereret via Whisper eller YouTube)
-- Filnavn: `virtualoffice-walkthrough-2care4-v1.mp4`
+- Filnavn: `virtualoffice-walkthrough-nicehair-v1.mp4`
 
 ---
 
@@ -98,7 +98,7 @@ Skift til Salgs-rummet — andre beskeder.
 **Skærm:**  
 Vis login-siden.  
 Klik på "Log ind med Microsoft" — standard Azure AD login.  
-Zoom ind: "Brug din normale 2care4-konto".
+Zoom ind: "Brug din normale Nicehair-konto".
 
 **Voice-over:**
 > "Login er via jeres eksisterende Microsoft 365-konto.
@@ -116,7 +116,7 @@ Zoom ind: "Brug din normale 2care4-konto".
 **Skærm:**  
 Åbn Layout Editor (/editor).  
 Flyt et rum med drag-and-drop.  
-Omdøb "Engineering" til "IT — Glostrup".
+Omdøb "Engineering" til "IT & Business Excellence".
 
 **Voice-over:**
 > "Kontoret er jeres.
@@ -140,7 +140,7 @@ Fade til simpel slide med tekst:
 Ingen investering — ingen risiko
 ```
 
-Kontakt-info: rka@2care4.dk
+Kontakt-info: Rasmus Kronborg, Head of IT & Business Excellence
 
 **Voice-over:**
 > "Vi foreslår en 30-dages pilot med 15 brugere.

@@ -1,6 +1,6 @@
 # VirtualOffice
 
-2D spatial audio virtual office — walk around a shared office floor, talk to colleagues with proximity-based audio, and see who's online. Built for the 2care4 pilot (15 users).
+2D spatial audio virtual office — walk around a shared office floor, talk to colleagues with proximity-based audio, and see who's online. Built for the internal Nicehair pilot.
 
 ## Architecture
 
@@ -25,7 +25,7 @@
 │  │  │  useLiveKit   │  │    │  │    Azure AD (Entra)  │  │ │
 │  │  │   Room        │──┼────┼──│    OIDC SSO          │  │ │
 │  │  │  usePresence  │──┼────┼──│    via NextAuth.js   │  │ │
-│  │  │  useChat      │──┼────┼──│    (2care4 M365)     │  │ │
+│  │  │  useChat      │──┼────┼──│    (Nicehair M365)   │  │ │
 │  │  └──────────────┘  │    │  └──────────────────────┘  │ │
 │  │         │          │    │                              │ │
 │  │  ┌──────┴───────┐  │    └──────────────────────────────┘ │
@@ -56,7 +56,7 @@
 | Layer              | Technology                    | Purpose                                               |
 |--------------------|-------------------------------|-------------------------------------------------------|
 | **Frontend**       | Next.js 15 App Router, React 19, Tailwind CSS 4, TypeScript 5 | Server-rendered pages + client-side canvas |
-| **Auth**           | NextAuth.js v5 + Microsoft Entra ID (Azure AD) OIDC  | SSO with 2care4 M365 accounts                         |
+| **Auth**           | NextAuth.js v5 + Microsoft Entra ID (Azure AD) OIDC  | SSO with Nicehair M365 accounts                         |
 | **Real-time audio**| LiveKit Cloud (WebRTC)        | Spatial audio: proximity-based volume/pan             |
 | **Presence**       | SSE + Vercel Postgres         | Who's online, where they are, heartbeat-based liveness|
 | **Chat**           | SSE + Vercel Postgres         | Room-scoped + private DMs, auto-expiring messages     |
@@ -138,7 +138,7 @@ virtual-office/
 - npm (or pnpm/yarn/bun)
 - A LiveKit Cloud project (free tier works for up to 50 concurrent sessions)
 - A Vercel Postgres database
-- An Azure AD application registration (for 2care4 SSO)
+- An Azure AD application registration (for Nicehair SSO)
 
 ### 1. Clone and install
 
@@ -160,7 +160,7 @@ Fill in `.env.local`:
 # Generated with: openssl rand -hex 32
 NEXTAUTH_SECRET=your-secret-here
 
-# Azure AD / Microsoft Entra ID (SSO with 2care4 M365)
+# Azure AD / Microsoft Entra ID (SSO with Nicehair M365)
 AUTH_MICROSOFT_ENTRA_ID_ID=your-client-id
 AUTH_MICROSOFT_ENTRA_ID_SECRET=your-client-secret
 AUTH_MICROSOFT_ENTRA_ID_ISSUER=https://login.microsoftonline.com/{tenant-id}/v2.0
@@ -303,4 +303,4 @@ Full API docs are in [docs/api/README.md](./docs/api/README.md). Summary:
 
 ## License
 
-Private — 2care4 pilot. Not for redistribution.
+Private — Nicehair pilot. Not for redistribution.

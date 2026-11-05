@@ -47,9 +47,11 @@ Medarbejdere logger ind, ser en top-down kontorplan, bevæger deres avatar rundt
 - Oplever manglen på "kontor-energi" som et reelt problem
 - Har én teknisk/IT-ansvarlig der kan onboarde produktet
 
-### 1.3 Pilotplan — 2care4
+### 1.3 Pilotplan — Nicehair
 
-**2care4** er en dansk virksomhed med 15+ medarbejdere i IT-afdelingen og opererer i sundhedssektoren. De er det første betalende pilotkunde og bruges til at validere alle kernefeatures.
+**Nicehair** er en dansk e-handelsvirksomhed inden for hårpleje og skønhed med kundeservice, lager/fulfillment, e-handel og marketing samt IT. Nicehair er den første pilot (intern, drevet af IT & Business Excellence) og bruges til at validere alle kernefeatures.
+
+> Note (nov. 2026): Piloten var oprindeligt planlagt hos 2care4 og er flyttet til Nicehair.
 
 **Pilotens formål:**
 - Validere spatial audio-oplevelsen i praksis
@@ -62,7 +64,7 @@ Medarbejdere logger ind, ser en top-down kontorplan, bevæger deres avatar rundt
 
 | Uge | Aktivitet |
 |-----|-----------|
-| 1 | Opsætning af 2care4-organisation, import af kontorplan, oprettelse af brugere via Azure AD |
+| 1 | Opsætning af Nicehair-organisation, import af kontorplan, oprettelse af brugere via Azure AD |
 | 2-3 | Daglig brug af spatial audio og tilstedeværelsesstatus |
 | 4 | Aktivering af rumreservation med Outlook-sync |
 | 5 | Feedback-session + struktureret interview med 5-8 brugere |
@@ -170,7 +172,7 @@ Browser → NextAuth.js → Azure AD (MSAL) ELLER email/password
 ```sql
 CREATE TABLE orgs (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    slug            TEXT UNIQUE NOT NULL,        -- fx "2care4" → 2care4.virtualoffice.app
+    slug            TEXT UNIQUE NOT NULL,        -- fx "nicehair" → nicehair.virtualoffice.app
     name            TEXT NOT NULL,
     plan            TEXT NOT NULL DEFAULT 'starter', -- starter | team | business
     plan_seats      INTEGER NOT NULL DEFAULT 10,
@@ -545,7 +547,7 @@ import { auth } from "./app/api/auth/[...nextauth]/route";
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   
-  // Udtræk org slug fra URL: /app/2care4/...
+  // Udtræk org slug fra URL: /app/nicehair/...
   const match = pathname.match(/^\/app\/([^\/]+)/);
   const urlSlug = match?.[1];
   
@@ -1493,7 +1495,7 @@ jobs:
 
 ### 12.1 MVP — Fase 1 (estimat: 8-10 uger)
 
-**Mål:** 2care4-pilot kan køre. Grundlæggende kontor-oplevelse.
+**Mål:** Nicehair-pilot kan køre. Grundlæggende kontor-oplevelse.
 
 | Feature | Estimat |
 |---------|---------|
@@ -1506,7 +1508,7 @@ jobs:
 | Multi-tenant: org-signup, subdomain routing, seat-check | 1 uge |
 | Stripe: Starter (gratis) + Team-plan, checkout | 1 uge |
 | Microsoft SSO (Azure AD MSAL) | 0,5 uge |
-| Pilot-opsætning: 2care4 map, brugere, Azure AD sync | 0,5 uge |
+| Pilot-opsætning: Nicehair map, brugere, Azure AD sync | 0,5 uge |
 | **Total** | **~8,5 uge** |
 
 **MVP ikke-inkluderet (bevidste fravalg):**
@@ -1557,7 +1559,7 @@ jobs:
 ### 12.5 Samlet tidslinje
 
 ```
-Uge 1-9:   MVP → 2care4 pilot
+Uge 1-9:   MVP → Nicehair pilot
 Uge 10-11: Pilot feedback + rettelser
 Uge 12-17: V2 → public launch
 Uge 18-21: V3
@@ -1649,4 +1651,4 @@ const room = await db.query(
 
 ---
 
-*Dokument slut. Næste skridt: review med teknisk lead og 2care4-stakeholders, herefter sprint-planlægning for MVP.*
+*Dokument slut. Næste skridt: review med teknisk lead og Nicehair-stakeholders, herefter sprint-planlægning for MVP.*

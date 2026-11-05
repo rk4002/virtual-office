@@ -1,5 +1,5 @@
 -- VirtualOffice — Demo seed script
--- Klar til 2care4 pilot-præsentation
+-- Klar til Nicehair pilot-præsentation
 -- Kør mod Vercel Postgres, fx: psql $POSTGRES_URL -f seed-demo-users.sql
 --
 -- KRAV: DATABASE_URL / POSTGRES_URL skal sættes først.
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 -- 2. Ryd eventuelle gamle demo-data
 DELETE FROM presence   WHERE user_id LIKE 'demo-%';
 DELETE FROM chat_messages WHERE sender_id LIKE 'demo-%';
-DELETE FROM office_layouts WHERE name = '2care4 Demo Layout';
+DELETE FROM office_layouts WHERE name = 'Nicehair Demo Layout';
 
 -- 3. Indsæt 7 demo-brugere med realistiske positioner på kontoret
 -- Positioner er baseret på ROOMS defineret i src/lib/office-layout.ts:
@@ -54,19 +54,19 @@ DELETE FROM office_layouts WHERE name = '2care4 Demo Layout';
 --   kitchen:   x:1000-1420, y:880-1120 (Køkken)
 INSERT INTO presence (user_id, name, email, x, y, last_seen, online) VALUES
   -- IT-afdelingen (Engineering pod)
-  ('demo-rasmus',   'Rasmus K. (IT)',     'rka@2care4.dk',        300, 620, now(), TRUE),
-  ('demo-mette',    'Mette L. (IT)',      'ml@2care4.dk',         180, 580, now(), TRUE),
-  ('demo-thomas',   'Thomas B. (IT)',     'tb@2care4.dk',         420, 650, now(), TRUE),
+  ('demo-rasmus',   'Rasmus K. (IT)',     'rk@demo.nicehair.dk',        300, 620, now(), TRUE),
+  ('demo-mette',    'Mette L. (IT)',      'ml@demo.nicehair.dk',         180, 580, now(), TRUE),
+  ('demo-thomas',   'Thomas B. (IT)',     'tb@demo.nicehair.dk',         420, 650, now(), TRUE),
 
   -- Salgs-team (Sales pod)
-  ('demo-louise',   'Louise H. (Salg)',   'lh@2care4.dk',        1600, 550, now(), TRUE),
-  ('demo-jakob',    'Jakob S. (Salg)',    'js@2care4.dk',        1750, 600, now(), TRUE),
+  ('demo-louise',   'Louise H. (Salg)',   'lh@demo.nicehair.dk',        1600, 550, now(), TRUE),
+  ('demo-jakob',    'Jakob S. (Salg)',    'js@demo.nicehair.dk',        1750, 600, now(), TRUE),
 
   -- HR & Administration
-  ('demo-anne',     'Anne M. (HR)',       'am@2care4.dk',        1300, 100, now(), TRUE),
+  ('demo-anne',     'Anne M. (HR)',       'am@demo.nicehair.dk',        1300, 100, now(), TRUE),
 
   -- Ledelse — i mødelokale A til demo-start
-  ('demo-ceo',      'Sune P. (Direktør)', 'sp@2care4.dk',         160, 170, now(), TRUE)
+  ('demo-ceo',      'Sune P. (Direktør)', 'sp@demo.nicehair.dk',         160, 170, now(), TRUE)
 ON CONFLICT (user_id) DO UPDATE SET
   name      = EXCLUDED.name,
   email     = EXCLUDED.email,
@@ -77,7 +77,7 @@ ON CONFLICT (user_id) DO UPDATE SET
 
 -- 4. Seed demo office layout (matcher src/lib/office-layout.ts ROOMS)
 INSERT INTO office_layouts (name, floor_width, floor_height, rooms_json) VALUES (
-  '2care4 Demo Layout',
+  'Nicehair Demo Layout',
   2400,
   1350,
   '[
@@ -116,7 +116,7 @@ INSERT INTO chat_messages (scope, room_id, sender_id, sender_name, text, x, y, c
    420, 650, now() - interval '2 minutes', now() + interval '58 minutes'),
 
   ('room', 'sales-pod', 'demo-louise', 'Louise H. (Salg)',
-   'Reminder: kundemøde med Novo kl. 14 — hvem er med?',
+   'Reminder: planlægning af Black Friday-kampagnen kl. 14 — hvem er med?',
    1600, 550, now() - interval '5 minutes', now() + interval '55 minutes'),
 
   ('room', 'sales-pod', 'demo-jakob', 'Jakob S. (Salg)',
@@ -125,5 +125,5 @@ INSERT INTO chat_messages (scope, room_id, sender_id, sender_name, text, x, y, c
 
 -- 6. Verificer data
 SELECT 'Presence brugere:' AS check, count(*) AS antal FROM presence WHERE online = TRUE;
-SELECT 'Demo layout:' AS check, name FROM office_layouts WHERE name = '2care4 Demo Layout';
+SELECT 'Demo layout:' AS check, name FROM office_layouts WHERE name = 'Nicehair Demo Layout';
 SELECT 'Chat beskeder:' AS check, count(*) AS antal FROM chat_messages WHERE sender_id LIKE 'demo-%';

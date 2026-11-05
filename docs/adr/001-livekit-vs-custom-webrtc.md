@@ -4,6 +4,9 @@
 **Date**: 2026-06-05  
 **Deciders**: Rasmus (2care4)
 
+> **Note (nov. 2026):** Beslutningen blev truffet, da piloten var planlagt hos 2care4. Projektet fortsætter nu hos Nicehair (Rasmus er Head of IT & Business Excellence). Beslutningen står uændret; referencer til 2care4 nedenfor er historiske.
+
+
 ## Context
 
 VirtualOffice needs real-time audio communication between users moving around a 2D office floor. The core requirement is **spatial audio**: users should hear each other based on proximity, with volume falloff, stereo panning, and zone-based mixing (meeting rooms, focus rooms, social zones).

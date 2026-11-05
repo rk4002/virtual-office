@@ -1,4 +1,4 @@
-# VirtualOffice — MVP Scope (2care4 Pilot)
+# VirtualOffice — MVP Scope (Nicehair Pilot)
 
 _Genereret af Hermes kanban-pipeline (t_8fd3f2a6) — 2026-06-04_
 
@@ -29,11 +29,11 @@ Alle pitchede features er korrekt beskrevet; pitchen over-claimede ikke.
 
 ---
 
-## 2. MVP Scope — 2care4 Pilot (15 brugere, 6 uger)
+## 2. MVP Scope — Nicehair Pilot (15 brugere, 6 uger)
 
 ### I scope
 
-1. **Azure AD SSO** — login via NextAuth.js + Microsoft provider (2care4 bruger M365)
+1. **Azure AD SSO** — login via NextAuth.js + Microsoft provider (Nicehair bruger M365)
 2. **Spatial audio** — LiveKit Cloud free tier (håndterer 15 brugere komfortabelt)
 3. **Fixed single-floor layout** — Klassisk layout fra prototype (ingen map editor)
 4. **Avatar presence + bevægelse** — port fra prototype, persistence via Pusher + DB
@@ -63,7 +63,7 @@ Alle pitchede features er korrekt beskrevet; pitchen over-claimede ikke.
 
 ```
 Frontend:   Next.js 15 (App Router) — mandated by DEVELOPMENT_STANDARDS.md
-Auth:       NextAuth.js + Azure AD OIDC (2care4's M365 tenant)
+Auth:       NextAuth.js + Azure AD OIDC (Nicehair's M365 tenant)
 Spatial:    LiveKit Cloud free tier (spatial audio, WebRTC)
 Presence:   Pusher (non-audio presence sync — simplest for 15 users)
 Database:   Vercel Postgres + Drizzle ORM
@@ -111,7 +111,7 @@ rooms           -- id, floor_id, name, capacity, bounds_json
 | 2 | Avatar movement + presence på gulvet (Pusher live) |
 | 3 | LiveKit spatial audio integreret |
 | 4 | Desk personalisering + status |
-| 5 | Pilot-onboarding: 15 2care4-brugere |
+| 5 | Pilot-onboarding: 15 Nicehair-brugere |
 | 6 | Feedback-runde, prioritér iteration 2 |
 
 ---
@@ -119,7 +119,7 @@ rooms           -- id, floor_id, name, capacity, bounds_json
 ## 7. Acceptance Criteria
 
 ### Teknisk (6)
-- [ ] Azure AD login virker for alle @2care4.dk accounts
+- [ ] Azure AD login virker for alle Nicehair-konti
 - [ ] Presence heartbeat opdaterer position < 200ms
 - [ ] LiveKit audio aktiveres automatisk ved nærhed (< 150px)
 - [ ] DB skriver korrekt i multi-tenant schema
@@ -160,4 +160,4 @@ rooms           -- id, floor_id, name, capacity, bounds_json
 5. Opsæt Vercel Postgres + Drizzle migrations
 6. Deploy til Vercel preview URL → test med Rasmus
 
-**Åbent:** Rasmus skal godkende Azure AD app-registrering i 2care4 tenant.
+**Åbent:** Rasmus skal godkende Azure AD app-registrering i Nicehairs tenant (ny app, ikke Kronbots).

@@ -4,6 +4,9 @@
 **Date**: 2026-06-05  
 **Deciders**: Rasmus (2care4)
 
+> **Note (nov. 2026):** Beslutningen blev truffet, da piloten var planlagt hos 2care4. Projektet fortsætter nu hos Nicehair (Rasmus er Head of IT & Business Excellence). Beslutningen står uændret; referencer til 2care4 nedenfor er historiske.
+
+
 ## Context
 
 VirtualOffice needs a web framework for rendering the 2D office canvas, handling API routes, managing authentication, and serving static assets. Two routing architectures in Next.js were evaluated:

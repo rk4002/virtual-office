@@ -14,7 +14,7 @@ export default function LoginPage() {
             VirtualOffice
           </h1>
           <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-            Sign in with your 2care4 account to enter the office
+            Log ind med din Nicehair-konto for at komme ind på kontoret
           </p>
         </div>
 
@@ -46,7 +46,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-xs text-zinc-400 dark:text-zinc-500">
-          Powered by 2care4 Microsoft 365
+          Login via Nicehairs Microsoft 365
         </p>
       </div>
     </div>

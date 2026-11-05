@@ -156,7 +156,7 @@ const KLASSISK = {
       content: { kicker: 'All-hands · Live', title: 'Q2 highlights', sub: 'CEO · slide 4 af 22' } },
     { id: 'screen-main', label: 'Stor skærm', big: true,
       x: 1100, y: 920, w: 150, h: 26,
-      content: { kicker: 'God morgen', title: 'Velkommen til 2care4', sub: 'Tirsdag · 20. maj' } },
+      content: { kicker: 'God morgen', title: 'Velkommen til Nicehair', sub: 'Tirsdag · 20. maj' } },
     { id: 'screen-cafe', label: 'Kantine-skærm', big: true,
       x: 1900, y: 920, w: 200, h: 30,
       content: { kicker: 'Frokost', title: 'Tirsdag: kylling & grøntsager', sub: 'Vegetar · linsesalat' } },
