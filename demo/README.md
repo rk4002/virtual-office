@@ -34,15 +34,17 @@ Workspace: t_c0ca1731
 
 ## Demo-brugere der seedes
 
+Fiktive personer. Domænet `demo.nicehair.dk` er kun demo-data og ikke rigtige postkasser.
+
 | Navn | Email | Position | Rolle |
 |------|-------|----------|-------|
-| Rasmus K. (IT) | rka@2care4.dk | Engineering pod | IT-leder |
-| Mette L. (IT) | ml@2care4.dk | Engineering pod | IT |
-| Thomas B. (IT) | tb@2care4.dk | Engineering pod | IT |
-| Louise H. (Salg) | lh@2care4.dk | Sales pod | Sælger |
-| Jakob S. (Salg) | js@2care4.dk | Sales pod | Sælger |
-| Anne M. (HR) | am@2care4.dk | HR-kontor | HR |
-| Sune P. (Direktør) | sp@2care4.dk | Mødelokale A | CEO |
+| Rasmus K. (IT) | rk@demo.nicehair.dk | Engineering pod | Head of IT & Business Excellence |
+| Mette L. (IT) | ml@demo.nicehair.dk | Engineering pod | IT |
+| Thomas B. (IT) | tb@demo.nicehair.dk | Engineering pod | IT |
+| Louise H. (Salg) | lh@demo.nicehair.dk | Sales pod | Sælger |
+| Jakob S. (Salg) | js@demo.nicehair.dk | Sales pod | Sælger |
+| Anne M. (HR) | am@demo.nicehair.dk | HR-kontor | HR |
+| Sune P. (Direktør) | sp@demo.nicehair.dk | Mødelokale A | CEO |
 
 ---
 

@@ -1,7 +1,7 @@
-# VirtualOffice — Demo-script til 2care4 salgspræsentation
+# VirtualOffice — Demo-script til intern præsentation hos Nicehair
 
 **Varighed:** 15-20 minutter  
-**Målgruppe:** Beslutningstager(e) hos 2care4 (IT-ledelse, HR, direktion)  
+**Målgruppe:** Beslutningstager(e) hos Nicehair (IT & Business Excellence, HR, direktion, kundeservice)  
 **Format:** Live demo + dialog  
 **Demonstrant:** Rasmus K. eller salgsrepræsentant
 
@@ -101,13 +101,13 @@
 
 ## Scene 5: Layout — jeres eget kontor (11-13 min)
 
-**Mål:** Vis at platformen er tilpasselig til 2care4
+**Mål:** Vis at platformen kan tilpasses Nicehair
 
 **Demo-flow:**
 1. Åbn /editor i ny fane (Layout Editor).
 2. Vis at rummene kan flyttes og omdøbes.
 3. Fortæl: "Vi kan sætte dette op til at afspejle jeres faktiske kontorlayout
-   — Glostrup-etagen, HR-området, IT-bunkeren."
+   — kundeservice, lager og fulfillment, e-handel og marketing, IT."
 
 **Fortæl:**
 > "Piloten starter med 15 brugere. Vi sætter det op på en eftermiddag,

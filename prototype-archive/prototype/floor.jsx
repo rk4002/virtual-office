@@ -321,7 +321,7 @@ function Floor({
         <div className="vo-floor__door-label">INDGANG</div>
       </div>
 
-      <div className="vo-floor__stamp vo-floor__stamp--l">2care4 · Stueetage</div>
+      <div className="vo-floor__stamp vo-floor__stamp--l">Nicehair · Stueetage</div>
       <div className="vo-floor__stamp vo-floor__stamp--r">{layout.name}</div>
 
       {(layout?.zones || []).map(z => (

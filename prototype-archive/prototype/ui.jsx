@@ -188,18 +188,18 @@ function PresentationOverlay({ screen, source, onChangeSource, onStop, camStream
               <div className="vo-present__slide-title">{screen.content?.title || 'Q2 Roadmap'}</div>
               <div className="vo-present__slide-sub">{screen.content?.sub || 'Sprint 23 · uge 21'}</div>
               <div className="vo-present__slide-bullets">
-                <div>MVP er stabil i 2care4-pilot</div>
+                <div>MVP er stabil i Nicehair-pilot</div>
                 <div>Outlook-sync ankommer i V2 (Q4)</div>
                 <div>Mini-games launches i Q1 2027</div>
               </div>
-              <div className="vo-present__slide-foot">VirtualOffice · 2care4</div>
+              <div className="vo-present__slide-foot">VirtualOffice · Nicehair</div>
             </div>
           )}
           {source === 'screen' && (
             <div className="vo-present__sharemock">
               <div className="vo-present__sharemock-bar">
                 <span></span><span></span><span></span>
-                <div className="vo-present__sharemock-url">2care4.virtualoffice.app/admin/dashboard</div>
+                <div className="vo-present__sharemock-url">nicehair.virtualoffice.app/admin/dashboard</div>
               </div>
               <div className="vo-present__sharemock-body">
                 <div className="vo-present__sharemock-card">12 aktive brugere</div>
@@ -287,7 +287,7 @@ function TopBar({ you, status, onCycleStatus, currentRoom, onlineCount, theme, o
         <span className="vo-logo"></span>
         <span className="vo-topbar__title">VirtualOffice</span>
         <span className="vo-topbar__sep">·</span>
-        <span className="vo-topbar__org">2care4</span>
+        <span className="vo-topbar__org">Nicehair</span>
         {layouts && <LayoutSwitcher layouts={layouts} layoutId={layoutId} onChange={onLayoutChange} />}
       </div>
 

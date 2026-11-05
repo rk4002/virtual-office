@@ -425,7 +425,7 @@ Standard NextAuth.js catch-all route. Handles:
 
 **Azure AD app registration requirements**:
 - Redirect URI: `https://<your-domain>/api/auth/callback/microsoft-entra-id`
-- Supported account types: Single tenant (2care4 directory only) or multi-tenant
+- Supported account types: Single tenant (Nicehair directory only) or multi-tenant
 - Implicit grant: ID tokens
 - Platform: Web
 
